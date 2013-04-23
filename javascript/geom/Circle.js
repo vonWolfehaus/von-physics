@@ -1,5 +1,5 @@
 var von = von || {};
-von.Circle = function() {
+von.Circle = function(_x, _y, _settings) {
 	von.AABB.call(this);
 	this.x = _x;
 	this.y = _y;
@@ -8,7 +8,8 @@ von.Circle = function() {
 	
 	
 	// internal
-	var _self = this;
+	var _self = this,
+		_pi = Math.PI, _tau = pi*2, _rad = 0.0174532925199;
 	
 	this.update = function() {
 		// _self.velocity.y += von.gravity;
@@ -39,7 +40,10 @@ von.Circle = function() {
 	};
 	
 	this.render = function() {
-		
+		von.ctx.beginPath();
+		von.ctx.arc(_self.x, _self.y, _self.radius, 0, _tau, false);
+		von.ctx.fillStyle = 'rgba(50, 0, 50, 0.2)';
+		von.ctx.fill();
 	};
 	
 	// overwrite instance properties

@@ -18,18 +18,16 @@
 <script type="text/javascript" src="geom/Circle.js"></script>
 <script type="text/javascript">
 
-// GLOBAL SETTINGS
+// GLOBALS
 von.gravity = 0;
 von.friction = 0.98;
+von.ctx = null;
 
 (function () {	
 var stage = document.getElementById('stage');
-var ctx = null;
-var browserX = window.screenX;
-var browserY = window.screenY;
 
 var objects = [];
-var total = 15;
+var total = 5;
 
 var stageWidth = window.innerWidth;
 var	stageHeight = window.innerHeight;
@@ -45,18 +43,18 @@ window.onresize = function(evt) {
 	stage.height = stageHeight;
 }
 
+var _pi = Math.PI, _tau = pi*2, _rad = 0.0174532925199;
+
 window.addEventListener('load', function loaded(evt) {
 	window.removeEventListener('load', loaded);
 	
-	var drawingCanvas = document.getElementById('stage');
-	if (drawingCanvas.getContext) {
-		ctx = drawingCanvas.getContext('2d');
-		setInterval(render, 20);
-	}
+	ctx = stage.getContext('2d');
 	
-	var i, o;
+	var i, o, a = 0, ao = _tau / total,
+		wx = stageWidth/2, wy = stageHeight/2;
+	
 	for (i = 0; i < total; i++) {
-		o = new Ball();
+		o = new von.Circle(Math.cos(a) * 100 + wx, Math.sin(a) * 100 + wy);
 		objects.push(o);
 	}
 	
@@ -74,35 +72,30 @@ function tick() {
 		dt = now - _mark;
 	
 	_mark = now;
-	sf.elapsed = dt * 0.001;
+	von.elapsed = dt * 0.001;
 	
+	// motion (and usually gameplay)
 	var i, j, a, b;
-	for (i = 0; i < numRects; ++i) {
+	for (i = 0; i < total; ++i) {
 		objects[i].update();
 	}
 	
+	// physics
 	var m;
-	for (i = 0; i < (numRects-1); ++i) {
+	for (i = 0; i < (total-1); ++i) {
 		a = objects[i];
 		
-		for (j = i + 1; j < numRects; ++j) {
+		for (j = i + 1; j < total; ++j) {
 			b = objects[j];
 			
-			m = overlapAABB(a, b);
-			if (m) {
-				if (m.normal.x != 0) {
-					a.x -= m.penetration * m.normal.x;
-					// b.x += half * m.normal.x;
-				} else {
-					a.y -= m.penetration * m.normal.y;
-				}
-			}
-			// if (AABBvsAABB(a, b)) resolveCollision(a, b);
+			collision(a, b);
+			// if (collision(a, b)) resolveCollision(a, b);
 		}
 	}
 	
-	for (i = 0; i < numRects; ++i) {
-		objects[i].draw();
+	// drawing
+	for (i = 0; i < total; ++i) {
+		objects[i].render();
 	}
 	
 	window.webkitRequestAnimationFrame(tick);
@@ -112,8 +105,31 @@ var _difference = new Vector2D();
 var _normal = new Vector2D();
 var _vd = new Vector2D();
 var _impulse = new Vector2D();
+var _mtd = new Vector2D();
 
-function resolveCollision(a, b) {
+function collideBalls(a, b, resolve) {
+	// ball
+	var dx = a.x - b.x;
+	var dy = a.y - b.y;
+	var dist = (dx * dx)  + (dy * dy);
+	var radii = a.radius + b.radius;
+	if (dist < radii * radii) {
+		dist = Math.sqrt(dx * dx + dy * dy);
+		// vector
+		_difference.reset(dx, dy);
+		if (dist == 0)  {
+			dist = a.radius + b.radius - 1;
+			_difference.reset(radii, radii); // i don't think...
+		}
+		// vector
+		_mtd.reset(); // WHAT THE FUCK COME ON
+		var mtd = delta * ((a.radius + b.radius) - dist) / dist;
+		if (typeof resolve !== 'undefined') {
+			// resolveCollision(a, b, mtd);
+		}
+	}
+}
+/*function resolveCollision(a, b) {
 	// impact speed
 	v = A.v - B.v
 
@@ -131,41 +147,7 @@ function resolveCollision(a, b) {
 	// apply impulses
 	A.V += impulse * im1
 	B.V -= impulse * im2
-}
-
-function collideBalls(a, b) {
-	for (var i = 0; i < (total-1); ++i) {
-		var ball0 = balls[i];
-		
-		for (var j = i + 1; j < total; ++j) {
-			var ball1 = balls[j];
-			var dx = ball1.x - ball0.x;
-			var dy = ball1.y - ball0.y;
-			_difference.reset(dx, dy);
-			
-			var dist = Math.sqrt(dx * dx + dy * dy);
-			
-			if (dist < ball0.radius + ball1.radius) {
-				_normal = _difference.divide(dist);
-			    _vd.x = ball1.vx - ball0.vx;
-			    _vd.y = ball1.vy - ball0.vy;
-			    var dot = _vd.dotProduct(_normal);
-
-			    if (dot > 0) {
-			        var coefficient = 0.5;
-			        var impulseStrength = (1 + coefficient) * dot * ((1 / ball0.mass) + (1 / ball1.mass));
-			        _impulse.x = _normal.x * impulseStrength;
-			        _impulse.y = _normal.y * impulseStrength;
-			        ball0.vx -= _impulse.x / ball0.mass;
-			        ball0.vy -= _impulse.y / ball0.mass;
-			        ball1.vx += _impulse.x / ball1.mass;
-			        ball1.vy += _impulse.y / ball1.mass;
-			    }
-			}
-		}
-	}
-}
-
+}*/
 }());
 </script>
 </body>
