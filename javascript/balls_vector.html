@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	<title>Simple JS Physics</title>
+	<style>
+		* { margin:0; padding:0; background-color:#111111; }
+		body { position: fixed; width: 100%; height: 100%; -webkit-user-select: none; }
+	</style>
+</head>
+<body>
+	
+	<canvas id="stage" width="400" height="400">
+		<p>Your browser doesn't support canvas.</p>
+	</canvas>
+		
+<script type="text/javascript" src="Vector2D.js"></script>
+<script type="text/javascript" src="geom/Circle.js"></script>
+<script type="text/javascript">
+
+// GLOBAL SETTINGS
+von.gravity = 0;
+von.friction = 0.98;
+
+(function () {	
+var stage = document.getElementById('stage');
+var ctx = null;
+var browserX = window.screenX;
+var browserY = window.screenY;
+
+var objects = [];
+var total = 15;
+
+var stageWidth = window.innerWidth;
+var	stageHeight = window.innerHeight;
+stage.width = stageWidth;
+stage.height = stageHeight;
+
+window.onresize = function(evt) {
+	stage.width = 10;
+	stage.height = 10;
+	stageWidth = window.innerWidth;
+	stageHeight = window.innerHeight;
+	stage.width = stageWidth;
+	stage.height = stageHeight;
+}
+
+window.addEventListener('load', function loaded(evt) {
+	window.removeEventListener('load', loaded);
+	
+	var drawingCanvas = document.getElementById('stage');
+	if (drawingCanvas.getContext) {
+		ctx = drawingCanvas.getContext('2d');
+		setInterval(render, 20);
+	}
+	
+	var i, o;
+	for (i = 0; i < total; i++) {
+		o = new Ball();
+		objects.push(o);
+	}
+	
+	_mark = Date.now();
+	tick();
+});
+
+/**********************
+ * End initializing
+ */
+
+function tick() {
+	ctx.clearRect(0, 0, stageWidth, stageHeight);
+	var now = Date.now(),
+		dt = now - _mark;
+	
+	_mark = now;
+	sf.elapsed = dt * 0.001;
+	
+	var i, j, a, b;
+	for (i = 0; i < numRects; ++i) {
+		objects[i].update();
+	}
+	
+	var m;
+	for (i = 0; i < (numRects-1); ++i) {
+		a = objects[i];
+		
+		for (j = i + 1; j < numRects; ++j) {
+			b = objects[j];
+			
+			m = overlapAABB(a, b);
+			if (m) {
+				if (m.normal.x != 0) {
+					a.x -= m.penetration * m.normal.x;
+					// b.x += half * m.normal.x;
+				} else {
+					a.y -= m.penetration * m.normal.y;
+				}
+			}
+			// if (AABBvsAABB(a, b)) resolveCollision(a, b);
+		}
+	}
+	
+	for (i = 0; i < numRects; ++i) {
+		objects[i].draw();
+	}
+	
+	window.webkitRequestAnimationFrame(tick);
+}
+
+var _difference = new Vector2D();
+var _normal = new Vector2D();
+var _vd = new Vector2D();
+var _impulse = new Vector2D();
+
+function resolveCollision(a, b) {
+	// impact speed
+	v = A.v - B.v
+
+	// normalize mtd
+	mtdNormal = mtd.normalize()
+	vn = dot(v, mtdNormal)
+	// if the vn is > 0, then the 2 balls are intersecting, but they're moving away from each other already
+	if (vn > 0) return false
+
+	// impulse
+	// the restitution is the ball's elasticity. 1 is elastic, < 1 is inelastic
+	i = -((1 + restitution) * vn) / (im1 + im2)
+	impulse = mtdNormal * i
+
+	// apply impulses
+	A.V += impulse * im1
+	B.V -= impulse * im2
+}
+
+function collideBalls(a, b) {
+	for (var i = 0; i < (total-1); ++i) {
+		var ball0 = balls[i];
+		
+		for (var j = i + 1; j < total; ++j) {
+			var ball1 = balls[j];
+			var dx = ball1.x - ball0.x;
+			var dy = ball1.y - ball0.y;
+			_difference.reset(dx, dy);
+			
+			var dist = Math.sqrt(dx * dx + dy * dy);
+			
+			if (dist < ball0.radius + ball1.radius) {
+				_normal = _difference.divide(dist);
+			    _vd.x = ball1.vx - ball0.vx;
+			    _vd.y = ball1.vy - ball0.vy;
+			    var dot = _vd.dotProduct(_normal);
+
+			    if (dot > 0) {
+			        var coefficient = 0.5;
+			        var impulseStrength = (1 + coefficient) * dot * ((1 / ball0.mass) + (1 / ball1.mass));
+			        _impulse.x = _normal.x * impulseStrength;
+			        _impulse.y = _normal.y * impulseStrength;
+			        ball0.vx -= _impulse.x / ball0.mass;
+			        ball0.vy -= _impulse.y / ball0.mass;
+			        ball1.vx += _impulse.x / ball1.mass;
+			        ball1.vy += _impulse.y / ball1.mass;
+			    }
+			}
+		}
+	}
+}
+
+}());
+</script>
+</body>
+</html>
