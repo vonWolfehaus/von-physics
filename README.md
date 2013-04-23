@@ -16,6 +16,7 @@ Other neat things that deal with vectors and or physics:
 ## Algorithms
 
 Would this work? Source: http://gamedev.stackexchange.com/questions/53669/help-with-aabb-collision-detection
+
 	Vector2 Diff = Obj1.getPosition() - Obj2.getPosition();
 	Vector2 Normal = Diff.normalize()
 
