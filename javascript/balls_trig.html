@@ -4,8 +4,8 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<title>Simple JS Physics</title>
 	<style>
-		* { margin:0; padding:0; background-color:#111111; }
-		body { position: fixed; width: 100%; height: 100%; -webkit-user-select: none; }
+		* { margin:0; padding:0; }
+		body { position: fixed; width: 100%; height: 100%; -webkit-user-select: none; background-color:#111111; }
 	</style>
 </head>
 <body>
@@ -52,7 +52,17 @@
 		document.addEventListener('mouseup', onMouseUp);
 		document.addEventListener('mousemove', getMouseXY);
 		
-		generate();
+		for(var i = 0; i < total; i++) {
+			var ball = new Ball();
+			ball.color = "#" + genHex();
+			ball.bounce = .5 + (Math.random() * .5);
+			ball.vx = Math.random() * 50 - 25;
+			ball.vy = Math.random() * 50 - 25;
+			ball.size = 35 - (ball.bounce * 25);
+			ball.x = Math.random() * stageWidth;
+			ball.y = Math.random() * stageHeight;
+			balls[balls.length] = ball;
+		}
 	});
 	
 	
@@ -87,24 +97,6 @@
 		if (currentDrag != null) currentDrag.dragging = false;
 	}
 	
-	
-	
-	
-	function generate()
-	{
-		for(var i = 0; i < total; i++)
-		{
-			var ball = new Ball();
-			ball.color = "#" + genHex();
-			ball.bounce = .5 + (Math.random() * .5);
-			ball.vx = Math.random() * 50 - 25;
-			ball.vy = Math.random() * 50 - 25;
-			ball.size = 35 - (ball.bounce * 25);
-			ball.x = Math.random() * stageWidth;
-			ball.y = Math.random() * stageHeight;
-			balls[balls.length] = ball;
-		}
-	}
 	
 	function genHex()
 	{

@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	<title>Simple JS Physics</title>
+	<style>
+		* { margin:0; padding:0; }
+		body { position: fixed; width: 100%; height: 100%; -webkit-user-select: none; background-color:#111111; }
+	</style>
+</head>
+<body>
+	
+	<canvas id="stage" width="400" height="400">
+		<p>Your browser doesn't support canvas.</p>
+	</canvas>
+		
+<script type="text/javascript" src="Manifold.js"></script>
+<script type="text/javascript" src="Vector2D.js"></script>
+<script type="text/javascript" src="AABB.js"></script>
+<script type="text/javascript" src="geom/Rectangle.js"></script>
+<script type="text/javascript">
+
+// GLOBALS
+von.gravity = 10;
+von.friction = 0.98;
+
+von.ctx = null;
+
+
+/**********************
+ * Begin generic app stuff
+ */
+(function () {	
+var stage = document.getElementById('stage');
+
+var objects = [];
+var total = 15;
+
+window.onresize = function(evt) {
+	stage.width = 10;
+	stage.height = 10;
+	von.worldWidth = window.innerWidth;
+	von.worldHeight = window.innerHeight;
+	stage.width = von.worldWidth;
+	stage.height = von.worldHeight;
+}
+
+var _pi = Math.PI, _tau = _pi*2, _rad = 0.0174532925199;
+
+window.addEventListener('load', function loaded(evt) {
+	window.removeEventListener('load', loaded);
+	
+	von.worldWidth = window.innerWidth;
+	von.worldHeight = window.innerHeight;
+	stage.width = von.worldWidth;
+	stage.height = von.worldHeight;
+	
+	von.ctx = stage.getContext('2d');
+	von.worldWidth = window.innerWidth;
+	von.worldHeight = window.innerHeight;
+	
+	var i, o,
+		a = 0, ao = _tau / total,
+		wx = von.worldWidth/2, wy = von.worldHeight/2;
+	
+	for (i = 0; i < total; i++) {
+		o = new von.Rectangle(Math.cos(a) * 200 + wx, Math.sin(a) * 200 + wy);
+		objects.push(o);
+		a += ao;
+	}
+	
+	_mark = Date.now();
+	update();
+});
+
+/**********************
+ * End initializing
+ */
+
+function update() {
+	von.ctx.clearRect(0, 0, von.worldWidth, von.worldHeight);
+	var now = Date.now(),
+		dt = now - _mark;
+	
+	_mark = now;
+	von.elapsed = dt * 0.001;
+	
+	// motion (and usually gameplay)
+	var i, j, a, b;
+	for (i = 0; i < total; ++i) {
+		objects[i].update();
+	}
+	
+	// physics
+	var m;
+	for (i = 0; i < (total-1); ++i) {
+		a = objects[i];
+		
+		for (j = i + 1; j < total; ++j) {
+			b = objects[j];
+			
+			m = overlapAABB(a, b);
+			if (m) resolveCollision(a, b, m);
+		}
+	}
+	
+	// drawing
+	for (i = 0; i < total; ++i) {
+		objects[i].render();
+	}
+	
+	window.webkitRequestAnimationFrame(update);
+}
+
+
+
+/**********************
+ * Begin physics
+ */
+
+// scratch objects; ALWAYS use pre-made objects to keep memory consumption as low as possible!
+var _normal = new Vector2D();
+var _manifold = new Manifold();
+/**
+ * Tests if there's any overlap between two given bounding boxes, and returns
+ * the resulting manifold if so.
+ */
+function overlapAABB(a, b) {
+	// Exit with no intersection if found separated along an axis
+	if (a.max.x < b.min.x || a.min.x > b.max.x) return null;
+	if (a.max.y < b.min.y || a.min.y > b.max.y) return null;
+	
+	// Vector from A to B
+	_normal.reset(b.x - a.x, b.y - a.y);
+	
+	// Calculate half extents along x axis for each object
+	var a_extent = (a.max.x - a.min.x) / 2;
+	var b_extent = (b.max.x - b.min.x) / 2;
+	
+	// Calculate overlap on x axis
+	var x_overlap = a_extent + b_extent - Math.abs(_normal.x);
+	
+	// SAT test on x axis
+	if (x_overlap > 0) {
+		a_extent = (a.max.y - a.min.y) / 2;
+		b_extent = (b.max.y - b.min.y) / 2;
+		
+		// Calculate overlap on y axis
+		var y_overlap = a_extent + b_extent - Math.abs(_normal.y);
+		
+		// SAT test on y axis
+		if (y_overlap > 0) {
+			// Find out which axis is axis of least penetration
+			if (x_overlap < y_overlap) {
+				// Point towards B knowing that dist points from A to B
+				if (_normal.x < 0) {
+					_manifold.normal = _normal.reset(-1, 0);
+				} else {
+					_manifold.normal = _normal.reset(1, 0);
+				}
+				_manifold.penetration = x_overlap;
+				return _manifold;
+			} else {
+				// Point toward B knowing that dist points from A to B
+				if (_normal.y < 0) {
+					_manifold.normal = _normal.reset(0, -1);
+				} else {
+					_manifold.normal = _normal.reset(0, 1);
+				}
+				_manifold.penetration = y_overlap;
+				return _manifold;
+			}
+		}
+	}
+	return null;
+}
+
+var _rv = new Vector2D();
+var _impulse = new Vector2D();
+/**
+ * Using the manifold provided, will calculate the impulse to apply to
+ * the boxes to make them react "properly".
+ */
+function resolveCollision(a, b, m) {
+	// Calculate relative velocity
+	_rv.reset(b.velocity.x - a.velocity.x, b.velocity.y - a.velocity.y);
+	
+	// Calculate relative velocity in terms of the normal direction
+	var velAlongNormal = _rv.dotProduct(m.normal);
+	
+	// Do not resolve if velocities are separating
+	if (velAlongNormal > 0) {
+		return;
+	}
+	
+	// Calculate restitution
+	var e = Math.min(a.restitution, b.restitution);
+	
+	// Calculate impulse scalar
+	var j = -(1 + e) * velAlongNormal;
+	j /= a.invmass + b.invmass;
+	
+	// Apply impulse
+	_impulse.reset(m.normal.x * j, m.normal.y * j);
+	
+	a.velocity.x -= (a.invmass * _impulse.x);
+	a.velocity.y -= (a.invmass * _impulse.y);
+	
+	b.velocity.x += (b.invmass * _impulse.x);
+	b.velocity.y += (b.invmass * _impulse.y);
+	
+	var percent = 0.2; // usually 20% to 80%
+	var slop = 0.1; // usually 0.01 to 0.1
+	var correction = Math.max(m.penetration - slop, 0) / (a.invmass + b.invmass) * percent * m.normal;
+	a.position -= a.invmass * correction;
+	b.position += b.invmass * correction;
+}
+
+}());
+</script>
+</body>
+</html>

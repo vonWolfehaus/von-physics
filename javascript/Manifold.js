@@ -1,5 +1,4 @@
-var von = von || {};
-von.Manifold = function() {
+var Manifold = function() {
 	this.a = null;
 	this.b = null;
 	this.penetration = 0;

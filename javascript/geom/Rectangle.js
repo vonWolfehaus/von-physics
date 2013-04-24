@@ -1,6 +1,7 @@
 var von = von || {};
-von.Circle = function(_x, _y, _settings) {
+von.Rectangle = function(_x, _y, _settings) {
 	von.AABB.call(this);
+	
 	this.x = _x;
 	this.y = _y;
 	
@@ -16,21 +17,21 @@ von.Circle = function(_x, _y, _settings) {
 		// _self.velocity.x *= von.friction;
 		// _self.velocity.y *= von.friction;
 		
-		_self.x += _self.velocity.x * sf.elapsed;
-		_self.y += _self.velocity.y * sf.elapsed;
+		_self.x += _self.velocity.x * von.elapsed;
+		_self.y += _self.velocity.y * von.elapsed;
 		
 		if (_self.x < 0) {
 			_self.x = 0;
 			_self.velocity.x = -_self.velocity.x;
-		} else if (_self.x+_self.width > sf.worldWidth) {
-			_self.x = sf.worldWidth-_self.width;
+		} else if (_self.x+_self.width > von.worldWidth) {
+			_self.x = von.worldWidth-_self.width;
 			_self.velocity.x = -_self.velocity.x;
 		}
 		if (_self.y < 0) {
 			_self.y = 0;
 			_self.velocity.y = -_self.velocity.y;
-		} else if (_self.y+_self.height > sf.worldHeight) {
-			_self.y = sf.worldHeight-_self.height;
+		} else if (_self.y+_self.height > von.worldHeight) {
+			_self.y = von.worldHeight-_self.height;
 			_self.velocity.y = -_self.velocity.y;
 		}
 		
@@ -39,8 +40,8 @@ von.Circle = function(_x, _y, _settings) {
 	};
 	
 	this.render = function() {
-		sf.ctx.fillStyle = 'rgba(0, 10, 150, 0.5)'; // DEBUG
-	    sf.ctx.fillRect(_self.x, _self.y, _self.width, _self.height); // DEBUG
+		von.ctx.fillStyle = 'rgba(20, 100, 150, 0.7)'; // DEBUG
+	    von.ctx.fillRect(_self.x, _self.y, _self.width, _self.height); // DEBUG
 	};
 	
 	// overwrite instance properties

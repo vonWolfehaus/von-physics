@@ -1,13 +1,12 @@
 var von = von || {};
 von.AABB = function() {
-	
 	this.min = new Vector2D();
 	this.max = new Vector2D();
 	
-	this.mass = 10; // 0 is immobile
+	this.mass = 100; // 0 is immobile
 	this.invmass = 0;
-	this.restitution = 0; // bounciness
-	this.velocity = new Vector2D(Math.random()*40-20, Math.random()*40-20);
+	this.restitution = 0.8; // bounciness, 0 to 1
+	this.velocity = new Vector2D(Math.random()*75-30, Math.random()*75-30);
 	
 	// internal
 	var _self = this;
@@ -22,5 +21,4 @@ von.AABB = function() {
 	};
 	
 	this.setMass(this.mass); // make sure invmass is set
-	// console.log(this);
 };

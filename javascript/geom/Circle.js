@@ -1,15 +1,16 @@
 var von = von || {};
 von.Circle = function(_x, _y, _settings) {
 	von.AABB.call(this);
+	
 	this.x = _x;
 	this.y = _y;
 	
-	this.radius = 50;
+	this.radius = 30;
 	
 	
 	// internal
 	var _self = this,
-		_pi = Math.PI, _tau = pi*2, _rad = 0.0174532925199;
+		_pi = Math.PI, _tau = _pi*2, _rad = 0.0174532925199;
 	
 	this.update = function() {
 		// _self.velocity.y += von.gravity;
@@ -42,7 +43,7 @@ von.Circle = function(_x, _y, _settings) {
 	this.render = function() {
 		von.ctx.beginPath();
 		von.ctx.arc(_self.x, _self.y, _self.radius, 0, _tau, false);
-		von.ctx.fillStyle = 'rgba(50, 0, 50, 0.2)';
+		von.ctx.fillStyle = 'rgba(20, 100, 150, 0.7)';
 		von.ctx.fill();
 	};
 	

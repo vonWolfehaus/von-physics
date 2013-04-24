@@ -14,60 +14,71 @@
 		<p>Your browser doesn't support canvas.</p>
 	</canvas>
 		
+<script type="text/javascript" src="Manifold.js"></script>
 <script type="text/javascript" src="Vector2D.js"></script>
+<script type="text/javascript" src="AABB.js"></script>
 <script type="text/javascript" src="geom/Circle.js"></script>
 <script type="text/javascript">
 
 // GLOBALS
-von.gravity = 0;
+von.gravity = 10;
 von.friction = 0.98;
+
 von.ctx = null;
 
+
+/**********************
+ * Begin generic app stuff
+ */
 (function () {	
 var stage = document.getElementById('stage');
 
 var objects = [];
-var total = 5;
-
-var stageWidth = window.innerWidth;
-var	stageHeight = window.innerHeight;
-stage.width = stageWidth;
-stage.height = stageHeight;
+var total = 15;
 
 window.onresize = function(evt) {
 	stage.width = 10;
 	stage.height = 10;
-	stageWidth = window.innerWidth;
-	stageHeight = window.innerHeight;
-	stage.width = stageWidth;
-	stage.height = stageHeight;
+	von.worldWidth = window.innerWidth;
+	von.worldHeight = window.innerHeight;
+	stage.width = von.worldWidth;
+	stage.height = von.worldHeight;
 }
 
-var _pi = Math.PI, _tau = pi*2, _rad = 0.0174532925199;
+var _pi = Math.PI, _tau = _pi*2, _rad = 0.0174532925199;
 
 window.addEventListener('load', function loaded(evt) {
 	window.removeEventListener('load', loaded);
 	
-	ctx = stage.getContext('2d');
+	von.worldWidth = window.innerWidth;
+	von.worldHeight = window.innerHeight;
+	stage.width = von.worldWidth;
+	stage.height = von.worldHeight;
 	
-	var i, o, a = 0, ao = _tau / total,
-		wx = stageWidth/2, wy = stageHeight/2;
+	von.ctx = stage.getContext('2d');
+	von.worldWidth = window.innerWidth;
+	von.worldHeight = window.innerHeight;
+	
+	var i, o,
+		a = 0, ao = _tau / total,
+		wx = von.worldWidth/2, wy = von.worldHeight/2;
 	
 	for (i = 0; i < total; i++) {
-		o = new von.Circle(Math.cos(a) * 100 + wx, Math.sin(a) * 100 + wy);
+		o = new von.Circle(Math.cos(a) * 200 + wx, Math.sin(a) * 200 + wy);
 		objects.push(o);
+		a += ao;
 	}
 	
 	_mark = Date.now();
-	tick();
+	update();
 });
 
 /**********************
  * End initializing
  */
 
-function tick() {
-	ctx.clearRect(0, 0, stageWidth, stageHeight);
+function update() {
+	von.ctx.clearRect(0, 0, von.worldWidth, von.worldHeight);
 	var now = Date.now(),
 		dt = now - _mark;
 	
@@ -88,8 +99,8 @@ function tick() {
 		for (j = i + 1; j < total; ++j) {
 			b = objects[j];
 			
-			collision(a, b);
-			// if (collision(a, b)) resolveCollision(a, b);
+			m = collideBalls(a, b);
+			if (m) resolveCollision(a, b, m);
 		}
 	}
 	
@@ -98,20 +109,20 @@ function tick() {
 		objects[i].render();
 	}
 	
-	window.webkitRequestAnimationFrame(tick);
+	window.webkitRequestAnimationFrame(update);
 }
 
 var _difference = new Vector2D();
-var _normal = new Vector2D();
-var _vd = new Vector2D();
-var _impulse = new Vector2D();
 var _mtd = new Vector2D();
-
-function collideBalls(a, b, resolve) {
+/**
+ * Tests if there's any overlap between two given circles, and returns
+ * the resulting Minimum Translation Distance if so.
+ */
+function collideBalls(a, b) {
 	// ball
 	var dx = a.x - b.x;
 	var dy = a.y - b.y;
-	var dist = (dx * dx)  + (dy * dy);
+	var dist = (dx * dx) + (dy * dy);
 	var radii = a.radius + b.radius;
 	if (dist < radii * radii) {
 		dist = Math.sqrt(dx * dx + dy * dy);
@@ -119,35 +130,53 @@ function collideBalls(a, b, resolve) {
 		_difference.reset(dx, dy);
 		if (dist == 0)  {
 			dist = a.radius + b.radius - 1;
-			_difference.reset(radii, radii); // i don't think...
+			_difference.reset(radii, radii);
 		}
-		// vector
-		_mtd.reset(); // WHAT THE FUCK COME ON
-		var mtd = delta * ((a.radius + b.radius) - dist) / dist;
-		if (typeof resolve !== 'undefined') {
-			// resolveCollision(a, b, mtd);
-		}
+		var j = (radii - dist) / dist;
+		_mtd.reset(_difference.x * j, _difference.y * j);
+		return _mtd;
 	}
+	return null;
 }
-/*function resolveCollision(a, b) {
+
+var _normal = new Vector2D();
+var _rv = new Vector2D();
+var _impulse = new Vector2D();
+/**
+ * Using the Minimum Translation Distance provided, will calculate the impulse to apply to
+ * the circles to make them react "properly".
+ */
+function resolveCollision(a, b, mtd) {
 	// impact speed
-	v = A.v - B.v
-
+	_rv.reset(a.velocity.x - b.velocity.x, a.velocity.y - b.velocity.y);
+	
 	// normalize mtd
-	mtdNormal = mtd.normalize()
-	vn = dot(v, mtdNormal)
-	// if the vn is > 0, then the 2 balls are intersecting, but they're moving away from each other already
-	if (vn > 0) return false
+	_normal.copy(mtd).normalize();
+	
+	var velAlongNormal = _rv.dotProduct(_normal);
+	// if the velAlongNormal is > 0, then the 2 balls are intersecting, but they're moving away from each other already
+	if (velAlongNormal > 0) {
+		return false;
+	}
 
-	// impulse
-	// the restitution is the ball's elasticity. 1 is elastic, < 1 is inelastic
-	i = -((1 + restitution) * vn) / (im1 + im2)
-	impulse = mtdNormal * i
+	// Calculate restitution
+	var e = Math.min(a.restitution, b.restitution);
+	
+	// Calculate impulse scalar
+	var j = -(1 + e) * velAlongNormal;
+	j /= a.invmass + b.invmass;
+	
+	// Apply impulse
+	_impulse.reset(_normal.x * j, _normal.y * j);
 
 	// apply impulses
-	A.V += impulse * im1
-	B.V -= impulse * im2
-}*/
+	a.velocity.x += (a.invmass * _impulse.x);
+	a.velocity.y += (a.invmass * _impulse.y);
+	
+	b.velocity.x -= (b.invmass * _impulse.x);
+	b.velocity.y -= (b.invmass * _impulse.y);
+}
+
 }());
 </script>
 </body>
