@@ -21,7 +21,7 @@
 <script type="text/javascript">
 
 // GLOBALS
-von.gravity = 10;
+von.gravity = 5;
 von.friction = 0.98;
 
 von.ctx = null;
@@ -209,7 +209,7 @@ function resolveCollision(a, b, m) {
 	b.velocity.x += (b.invmass * _impulse.x);
 	b.velocity.y += (b.invmass * _impulse.y);
 	
-	var percent = 0.2; // usually 20% to 80%
+	var percent = 0.8; // usually 20% to 80%
 	var slop = 0.1; // usually 0.01 to 0.1
 	var correction = Math.max(m.penetration - slop, 0) / (a.invmass + b.invmass) * percent * m.normal;
 	a.position -= a.invmass * correction;

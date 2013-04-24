@@ -13,7 +13,7 @@ von.Circle = function(_x, _y, _settings) {
 		_pi = Math.PI, _tau = _pi*2, _rad = 0.0174532925199;
 	
 	this.update = function() {
-		// _self.velocity.y += von.gravity;
+		_self.velocity.y += von.gravity;
 		
 		// _self.velocity.x *= von.friction;
 		// _self.velocity.y *= von.friction;
@@ -21,19 +21,19 @@ von.Circle = function(_x, _y, _settings) {
 		_self.x += _self.velocity.x * von.elapsed;
 		_self.y += _self.velocity.y * von.elapsed;
 		
-		if (_self.x < 0) {
+		if (_self.x-_self.radius < 0) {
 			_self.x = 0;
-			_self.velocity.x = -_self.velocity.x;
+			_self.velocity.x = -_self.velocity.x * _self.restitution;
 		} else if (_self.x+_self.radius > von.worldWidth) {
 			_self.x = von.worldWidth-_self.radius;
-			_self.velocity.x = -_self.velocity.x;
+			_self.velocity.x = -_self.velocity.x * _self.restitution;
 		}
-		if (_self.y < 0) {
+		if (_self.y-_self.radius < 0) {
 			_self.y = 0;
-			_self.velocity.y = -_self.velocity.y;
+			_self.velocity.y = -_self.velocity.y * _self.restitution;
 		} else if (_self.y+_self.radius > von.worldHeight) {
 			_self.y = von.worldHeight-_self.radius;
-			_self.velocity.y = -_self.velocity.y;
+			_self.velocity.y = -_self.velocity.y * _self.restitution;
 		}
 		
 		_self.min.reset(_self.x, _self.y);

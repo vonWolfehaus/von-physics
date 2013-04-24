@@ -12,7 +12,7 @@ von.Rectangle = function(_x, _y, _settings) {
 	var _self = this;
 	
 	this.update = function() {
-		// _self.velocity.y += von.gravity;
+		_self.velocity.y += von.gravity;
 		
 		// _self.velocity.x *= von.friction;
 		// _self.velocity.y *= von.friction;
@@ -22,17 +22,17 @@ von.Rectangle = function(_x, _y, _settings) {
 		
 		if (_self.x < 0) {
 			_self.x = 0;
-			_self.velocity.x = -_self.velocity.x;
+			_self.velocity.x = -_self.velocity.x * _self.restitution;
 		} else if (_self.x+_self.width > von.worldWidth) {
 			_self.x = von.worldWidth-_self.width;
-			_self.velocity.x = -_self.velocity.x;
+			_self.velocity.x = -_self.velocity.x * _self.restitution;
 		}
 		if (_self.y < 0) {
 			_self.y = 0;
-			_self.velocity.y = -_self.velocity.y;
+			_self.velocity.y = -_self.velocity.y * _self.restitution;
 		} else if (_self.y+_self.height > von.worldHeight) {
 			_self.y = von.worldHeight-_self.height;
-			_self.velocity.y = -_self.velocity.y;
+			_self.velocity.y = -_self.velocity.y * _self.restitution;
 		}
 		
 		_self.min.reset(_self.x, _self.y);

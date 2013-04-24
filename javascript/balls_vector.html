@@ -99,8 +99,8 @@ function update() {
 		for (j = i + 1; j < total; ++j) {
 			b = objects[j];
 			
-			m = collideBalls(a, b);
-			if (m) resolveCollision(a, b, m);
+			m = collideBalls(a, b); // separates
+			if (m) resolveCollision(a, b, m); // reacts
 		}
 	}
 	
@@ -134,6 +134,15 @@ function collideBalls(a, b) {
 		}
 		var j = (radii - dist) / dist;
 		_mtd.reset(_difference.x * j, _difference.y * j);
+		
+		// separate them!
+		var cim = a.invmass + b.invmass;
+		a.x += _mtd.x * (a.invmass / cim);
+		a.y += _mtd.y * (a.invmass / cim);
+		
+		b.x -= _mtd.x * (b.invmass / cim);
+		b.y -= _mtd.y * (b.invmass / cim);
+		
 		return _mtd;
 	}
 	return null;
@@ -163,11 +172,11 @@ function resolveCollision(a, b, mtd) {
 	var e = Math.min(a.restitution, b.restitution);
 	
 	// Calculate impulse scalar
-	var j = -(1 + e) * velAlongNormal;
-	j /= a.invmass + b.invmass;
+	var i = -(1 + e) * velAlongNormal;
+	i /= a.invmass + b.invmass;
 	
 	// Apply impulse
-	_impulse.reset(_normal.x * j, _normal.y * j);
+	_impulse.reset(_normal.x * i, _normal.y * i);
 
 	// apply impulses
 	a.velocity.x += (a.invmass * _impulse.x);
