@@ -11,6 +11,7 @@ Add gravity to any vector-based page (uncomment it in geom/*.js) and you'll see 
 
 Other neat things that deal with vectors and or physics:
 * Flocking done well: http://bluethen.com/wordpress/index.php/processing-app/flock-ai/
+* Hot balls on quadratic curve action: http://lonely-pixel.com/lab/ballcurves/
 
 ## Full engines with readable code
 
