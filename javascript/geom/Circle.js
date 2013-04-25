@@ -22,14 +22,14 @@ von.Circle = function(_x, _y, _settings) {
 		_self.y += _self.velocity.y * von.elapsed;
 		
 		if (_self.x-_self.radius < 0) {
-			_self.x = 0;
+			_self.x = _self.radius;
 			_self.velocity.x = -_self.velocity.x * _self.restitution;
 		} else if (_self.x+_self.radius > von.worldWidth) {
 			_self.x = von.worldWidth-_self.radius;
 			_self.velocity.x = -_self.velocity.x * _self.restitution;
 		}
 		if (_self.y-_self.radius < 0) {
-			_self.y = 0;
+			_self.y = _self.radius;
 			_self.velocity.y = -_self.velocity.y * _self.restitution;
 		} else if (_self.y+_self.radius > von.worldHeight) {
 			_self.y = von.worldHeight-_self.radius;
@@ -53,4 +53,6 @@ von.Circle = function(_x, _y, _settings) {
 			if (_self.hasOwnProperty(attr)) _self[attr] = _settings[attr];
 		}
 	}
+	
+	this.type = 'circle';
 };

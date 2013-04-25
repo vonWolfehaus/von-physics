@@ -40,6 +40,10 @@ var Vector2D = function(x, y) {
 		return Math.sqrt((this.x * this.x) + (this.y * this.y));
 	};
 	
+	this.getLengthSq = function() {
+		return (this.x * this.x) + (this.y * this.y);
+	};
+	
 	/**
 	 * Sets the length which will change x and y, but not the angle.
 	 */
@@ -118,6 +122,11 @@ var Vector2D = function(x, y) {
 		this.x = typeof x === 'undefined' ? 0 : x;
 		this.y = typeof y === 'undefined' ? 0 : y;
 		return this;
+	};
+	
+	this.equals = function(v) {
+		if (this.x === v.x && this.y === v.y) return true;
+		return false;
 	};
 	
 	this.copy = function(v) {

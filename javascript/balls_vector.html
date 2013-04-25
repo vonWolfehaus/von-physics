@@ -119,14 +119,13 @@ var _mtd = new Vector2D();
  * the resulting Minimum Translation Distance if so.
  */
 function collideBalls(a, b) {
-	// ball
 	var dx = a.x - b.x;
 	var dy = a.y - b.y;
 	var dist = (dx * dx) + (dy * dy);
 	var radii = a.radius + b.radius;
 	if (dist < radii * radii) {
 		dist = Math.sqrt(dx * dx + dy * dy);
-		// vector
+		
 		_difference.reset(dx, dy);
 		if (dist == 0)  {
 			dist = a.radius + b.radius - 1;

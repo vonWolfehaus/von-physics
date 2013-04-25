@@ -50,4 +50,6 @@ von.Rectangle = function(_x, _y, _settings) {
 			if (_self.hasOwnProperty(attr)) _self[attr] = _settings[attr];
 		}
 	}
+	
+	this.type = 'rectangle';
 };

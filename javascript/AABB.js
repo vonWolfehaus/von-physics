@@ -8,6 +8,8 @@ von.AABB = function() {
 	this.restitution = 0.4; // bounciness, 0 to 1
 	this.velocity = new Vector2D(Math.random()*75-30, Math.random()*75-30);
 	
+	this.type = '';
+	
 	// internal
 	var _self = this;
 	
