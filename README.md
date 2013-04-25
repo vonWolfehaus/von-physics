@@ -7,8 +7,6 @@ These people fucking love physics, and they actually know what they're doing:
 * And for the circles, a combination of the above and: http://bluethen.com/wordpress/index.php/processing-app/do-you-like-balls/
 * It's so simple I don't fucking understand: http://codepen.io/stuffit/pen/fhjvk (from this dude: http://lonely-pixel.com/)
 
-Add gravity to any vector-based page (uncomment it in geom/*.js) and you'll see multi-body stuff just doesn't work. That shit is WAY more complicated. You'll see this isn't a problem with the balls because they're moved according to their MTD, while the AABB example only tries to correct for floating point error, which isn't enough.
-
 Other neat things that deal with vectors and or physics:
 * Flocking done well: http://bluethen.com/wordpress/index.php/processing-app/flock-ai/
 * Hot balls on quadratic curve action: http://lonely-pixel.com/lab/ballcurves/

@@ -159,7 +159,6 @@ function overlapAABB(a, b) {
 					_manifold.normal = _normal.reset(1, 0);
 				}
 				_manifold.penetration = x_overlap;
-				return _manifold;
 			} else {
 				// Point toward B knowing that dist points from A to B
 				if (_normal.y < 0) {
@@ -168,8 +167,32 @@ function overlapAABB(a, b) {
 					_manifold.normal = _normal.reset(0, 1);
 				}
 				_manifold.penetration = y_overlap;
-				return _manifold;
 			}
+			// tutsplus version, not as accurate, also slower
+			/*var percent = 0.8; // usually 20% to 80%
+			var slop = 0.1; // usually 0.01 to 0.1
+			
+			var mtd = Math.max(_manifold.penetration - slop, 0) / (a.invmass + b.invmass);
+			var correctionX = mtd * _normal.x * percent;
+			var correctionY = mtd * _normal.y * percent;*/
+			
+			/*a.x -= (a.invmass * correctionX);
+			a.y -= (a.invmass * correctionY);*/
+			
+			/*b.x += (b.invmass * correctionX);
+			b.y += (b.invmass * correctionY);*/
+			
+			// balls version
+			var correctionX = _manifold.penetration * _normal.x;
+			var correctionY = _manifold.penetration * _normal.y;
+			var cim = a.invmass + b.invmass;
+			a.x -= correctionX * (a.invmass / cim);
+			a.y -= correctionY * (a.invmass / cim);
+			
+			b.x += correctionX * (b.invmass / cim);
+			b.y += correctionY * (b.invmass / cim);
+			
+			return _manifold;
 		}
 	}
 	return null;
@@ -208,12 +231,6 @@ function resolveCollision(a, b, m) {
 	
 	b.velocity.x += (b.invmass * _impulse.x);
 	b.velocity.y += (b.invmass * _impulse.y);
-	
-	var percent = 0.8; // usually 20% to 80%
-	var slop = 0.1; // usually 0.01 to 0.1
-	var correction = Math.max(m.penetration - slop, 0) / (a.invmass + b.invmass) * percent * m.normal;
-	a.position -= a.invmass * correction;
-	b.position += b.invmass * correction;
 }
 
 }());
