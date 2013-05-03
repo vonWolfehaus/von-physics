@@ -6,6 +6,8 @@ von.AABB = function() {
 	this.mass = 100; // 0 is immobile
 	this.invmass = 0;
 	this.restitution = 0.4; // bounciness, 0 to 1
+	
+	// only used by 2d samples
 	this.velocity = new Vector2D(Math.random()*75-30, Math.random()*75-30);
 	
 	this.type = '';

@@ -1,20 +1,14 @@
 var von = von || {};
-von.BaseObject = function() {
-	// components
-	this.aabb = null;
-	this.motion = null;
-	this.graphics = null;
+von.GameObject = function() {
+	this.collisionHull = null;
+	this.position = new THREE.Vector3();
+	this.velocity = new THREE.Vector3();
 	
 	this.type = 'BaseObject';
 	
 	// internal
 	var _self = this;
 	
-	this.addComponent = function(componentName) {
-		if (typeof componentName !== )
-		var factory = 
-		von.ComponentList[componentName].call(this);
-	};
 	
 	this.addAABB = function() {
 		cubeGeo = new THREE.CubeGeometry( 50, 50, 50 );
@@ -22,11 +16,4 @@ von.BaseObject = function() {
 		cubeMaterial.ambient = cubeMaterial.color;
 	};
 	
-	this.addGraphics = function() {
-		
-	};
-	
-	this.addMotion = function() {
-		
-	};
 };
