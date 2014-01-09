@@ -13,22 +13,7 @@ Other neat things that deal with vectors and or physics:
 
 ## Full engines with readable code
 
-* Cannonjs: https://github.com/schteppe/cannon.js
-* Coffee physics: https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee
-* Impulse: https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js
-* microphysics: https://github.com/jeromeetienne/microphysics.js
-
-## Algorithms
-
-Would this work? Source: http://gamedev.stackexchange.com/questions/53669/help-with-aabb-collision-detection
-
-	Vector2 Diff = Obj1.getPosition() - Obj2.getPosition();
-	Vector2 Normal = Diff.normalize()
-
-	Vector2 AbsNormal = new Vector2(abs(Normal.x), abs(Normal.y));
-
-	if (AbsNormal.x > AbsNormal.y) {
-		// code for horizontal collision
-	} else {
-		// code for vertical collision
-	}
+* "Cannonjs":(https://github.com/schteppe/cannon.js)
+* "Coffee physics":(https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee)
+* "Impulse":(https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js)
+* "microphysics":(https://github.com/jeromeetienne/microphysics.js)

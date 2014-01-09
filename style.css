@@ -1,0 +1,33 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	color: #fff;
+	background: #151515;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+canvas {
+	pointer-events: none;
+	/*background-color: #fff;*/
+}
+
+nav.primary {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	text-align: center;
+	margin: 20px;
+}
+
+button {
+	padding: 5px 10px;
+	margin: 0 10px;
+}
