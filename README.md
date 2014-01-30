@@ -10,6 +10,7 @@ These people fucking love physics, and they actually know what they're doing:
 Other neat things that deal with vectors and or physics:
 * Flocking done well: http://bluethen.com/wordpress/index.php/processing-app/flock-ai/
 * Hot balls on quadratic curve action: http://lonely-pixel.com/lab/ballcurves/
+* Algorithms for electromagnetics, thermal, quantum, etc: https://github.com/AbhiAgarwal/phys.js
 
 ## Full engines with readable code
 
