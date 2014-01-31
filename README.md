@@ -14,6 +14,7 @@ Other neat things that deal with vectors and or physics:
 
 ## Full engines with readable code
 
+* [Oimo](https://github.com/lo-th/Oimo.js)
 * [PhysicsJS](https://github.com/wellcaffeinated/PhysicsJS)
 * [p2](https://github.com/schteppe/p2.js)
 * [newton](https://github.com/hunterloftis/newton)
