@@ -22,3 +22,4 @@ Other neat things that deal with vectors and or physics:
 * [Coffee physics](https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee)
 * [Impulse](https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js)
 * [microphysics](https://github.com/jeromeetienne/microphysics.js)
+* [Matter](http://brm.io/matter-js/)
