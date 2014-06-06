@@ -20,4 +20,9 @@ Other neat things that deal with vectors and or physics:
 * [Cannonjs](https://github.com/schteppe/cannon.js)
 * [Coffee physics](https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee)
 * [Impulse](https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js)
-* [microphysics](https://github.com/jeromeetienne/microphysics.js)
+* [microphysics](https://github.com/jeromeetienne/microphysics.js) (only mass and restitution, perfect for most games)
+
+## Other tricks
+
+* [Broadphase techniques](https://github.com/reu/broadphase.js)
+* [Efficient ray casting](http://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms)
