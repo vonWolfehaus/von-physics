@@ -14,12 +14,14 @@ Other neat things that deal with vectors and or physics:
 
 ## Full engines with readable code
 
+* [Oimo](https://github.com/lo-th/Oimo.js)
 * [PhysicsJS](https://github.com/wellcaffeinated/PhysicsJS)
 * [p2](https://github.com/schteppe/p2.js)
 * [newton](https://github.com/hunterloftis/newton)
 * [Cannonjs](https://github.com/schteppe/cannon.js)
 * [Coffee physics](https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee)
 * [Impulse](https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js)
+* [Matter](http://brm.io/matter-js/)
 * [microphysics](https://github.com/jeromeetienne/microphysics.js) (only mass and restitution, perfect for most games)
 
 ## Other tricks
