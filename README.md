@@ -1,16 +1,19 @@
 # Physics
 
-I fucking hate physics. That's why I had to write the tiniest library possible--so I didn't ever have to do this shit ever again!
+I fucking hate physics. That's why I had to compile a tiny, minimal library--so I didn't ever have to do this shit ever again! Unfortunately, it's still in progress.
 
-These people fucking love physics, and they actually know what they're doing:
-* My implementation is taken from [TutsPlus](http://gamedev.tutsplus.com/tutorials/implementation/create-custom-2d-physics-engine-aabb-circle-impulse-resolution)
-* And for the circles, a combination of the above and [this guy's code](http://bluethen.com/wordpress/index.php/processing-app/do-you-like-balls/)
-* So simple, so great: http://codepen.io/stuffit/pen/fhjvk (from [LonelyPixel](http://lonely-pixel.com/))
+Features:
+* circle vs circle detection and response
+* aabb vs aabb detection and response
 
-Other neat things that deal with vectors and or physics:
-* Flocking done well: http://bluethen.com/wordpress/index.php/processing-app/flock-ai/
-* Hot balls on quadratic curve action: http://lonely-pixel.com/lab/ballcurves/
-* Algorithms for electromagnetics, thermal, quantum, etc: https://github.com/AbhiAgarwal/phys.js
+## Resources
+
+* [TutsPlus](http://gamedev.tutsplus.com/tutorials/implementation/create-custom-2d-physics-engine-aabb-circle-impulse-resolution)
+* [ball collision](http://bluethen.com/wordpress/index.php/processing-app/do-you-like-balls/)
+* [verlet particle physics](http://www.lonely-pixel.com/lab/jsverlet/)
+* [balls vs quadratic curve](http://lonely-pixel.com/lab/ballcurves/)
+* [Mozilla](https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection)
+* [flocking done well](http://bluethen.com/wordpress/index.php/processing-app/flock-ai/)
 
 ## Full engines with readable code
 
@@ -23,7 +26,8 @@ Other neat things that deal with vectors and or physics:
 * [Coffee physics](https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee)
 * [Impulse](https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js)
 * [Matter](http://brm.io/matter-js/)
-* [microphysics](https://github.com/jeromeetienne/microphysics.js) (only mass and restitution, perfect for most games)
+* [microphysics](https://github.com/jeromeetienne/microphysics.js) - only mass and restitution, perfect for most games
+* [phys](https://github.com/AbhiAgarwal/phys.js) - Algorithms for electromagnetics, thermal, quantum, etc
 
 ## Other tricks
 
