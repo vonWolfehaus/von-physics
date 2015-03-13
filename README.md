@@ -12,18 +12,9 @@ Features:
 * "World" class with friction, gravity, and boundaries (infinity works too)
 * Memory-efficient broadphase (2D static grid)
 
-## Resources
-
-* [TutsPlus](http://gamedev.tutsplus.com/tutorials/implementation/create-custom-2d-physics-engine-aabb-circle-impulse-resolution)
-* [ball collision](http://bluethen.com/wordpress/index.php/processing-app/do-you-like-balls/)
-* [verlet particle physics](http://www.lonely-pixel.com/lab/jsverlet/)
-* [balls vs quadratic curve](http://lonely-pixel.com/lab/ballcurves/)
-* [Mozilla](https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection)
-* [flocking done well](http://bluethen.com/wordpress/index.php/processing-app/flock-ai/)
-
 ## Full engines with readable code
 
-These are engines that have fancy things like rotational torque, joints, and so on. If you want a "physics-based" game, use one of these instead. Or just use [Unity](http://unity3d.com/), let's be honest. The web is terrible for games, if only because you can't safeguard your assets. Great for prototyping though, with the [right tools](https://github.com/vonWolfehaus/von-component).
+These are engines that have fancy things like rotational torque, joints, and so on. If you want a "physics-based" game, use one of these instead. Or just use [Unity](http://unity3d.com/), let's be honest. The web is terrible for games, if only because you can't safeguard your assets. Great for prototyping though, with the [right tools](https://github.com/vonWolfehaus/von-component) :wink:
 
 * [sat](https://github.com/jriecken/sat-js)
 * [Oimo](https://github.com/lo-th/Oimo.js)
@@ -36,6 +27,15 @@ These are engines that have fancy things like rotational torque, joints, and so 
 * [Matter](http://brm.io/matter-js/)
 * [microphysics](https://github.com/jeromeetienne/microphysics.js) - I used this for the 3D stuff here
 * [phys](https://github.com/AbhiAgarwal/phys.js) - Algorithms for electromagnetics, thermal, quantum, etc
+
+## Resources
+
+* [TutsPlus](http://gamedev.tutsplus.com/tutorials/implementation/create-custom-2d-physics-engine-aabb-circle-impulse-resolution)
+* [ball collision](http://bluethen.com/wordpress/index.php/processing-app/do-you-like-balls/)
+* [verlet particle physics](http://www.lonely-pixel.com/lab/jsverlet/)
+* [balls vs quadratic curve](http://lonely-pixel.com/lab/ballcurves/)
+* [Mozilla](https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection)
+* [flocking done well](http://bluethen.com/wordpress/index.php/processing-app/flock-ai/)
 
 ## Other tricks
 
