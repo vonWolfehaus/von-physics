@@ -1,77 +1,84 @@
-/**
- * @source https://github.com/martinwells/gamecore.js
- */
-
-/**
- * @description
- * Represents an item stored in a linked list.
- */
-LinkedListNode = function() {
-	this.obj = null; // the object reference
-	this.next = null; // link to next object in the list
-	this.prev = null; // link to previous object in the list
+vgp.LinkedListNode = function() {
+	this.obj = null;
+	this.next = null;
+	this.prev = null;
 	this.free = true;
 };
-
-/**
- * @description
- * A high-speed doubly linked list of objects. Note that for speed reasons (using a dictionary lookup of
- * cached nodes) there can only be a single instance of an object in the list at the same time. Adding the same
- * object a second time will result in a silent return from the add method.
- * <p>
- * In order to keep a track of node links, an object must be able to identify itself with a uniqueId function.
- * <p>
- * To add an item use:
- * <pre><code>
- *   list.add(newItem);
- * </code></pre>
- * <p>
- * You can iterate using the first and next members, such as:
- * <pre><code>
- *   var node = list.first;
- *   while (node)
- *   {
- *       node.object().DOSOMETHING();
- *       node = node.next();
- *   }
- * </code></pre>
+/*
+	A high-speed doubly-linked list of objects. Note that for speed reasons (using a dictionary lookup of
+	cached nodes) there can only be a single instance of an object in the list at the same time. Adding the same
+	object a second time will result in a silent return from the add method.
+	
+	In order to keep a track of node links, an object must be able to identify itself with a uniqueID function.
+	
+	To add an item use:
+	<pre><code>
+	  list.add(newItem);
+	</code></pre>
+	<p>
+	You can iterate using the first and next members, such as:
+	<pre><code>
+	  var node = list.first;
+	  while (node)
+	  {
+	      node.object().DOSOMETHING();
+	      node = node.next();
+	  }
+	</code></pre>
  */
-LinkedList = function() {
+vgp.LinkedList = function() {
 	this.first = null;
 	this.last = null;
 	this.length = 0;
 	this.objToNodeMap = {}; // a quick lookup list to map linked list nodes to objects
-	this.uniqueId = Date.now() + '' + Math.floor(Math.random()*1000);
+	this.uniqueID = Date.now() + '' + Math.floor(Math.random()*1000);
 	
-	/**
-	 * Get the LinkedListNode for this object.
-	 * @param obj The object to get the node for
+	this.sortArray = [];
+	
+	/*
+		Get the LinkedListNode for this object.
+		@param obj The object to get the node for
 	 */
 	this.getNode = function (obj) {
-		// objects added to a list must implement a getUniqueId which returns a unique object identifier string
-		return this.objToNodeMap[obj.uniqueId];
+		// objects added to a list must implement a uniqueID which returns a unique object identifier string
+		return this.objToNodeMap[obj.uniqueID];
 	};
 
-	/**
-	 * Adds a specific node to the list -- typically only used internally unless you're doing something funky
-	 * Use add() to add an object to the list, not this.
+	/*
+		Adds a new node to the list -- typically only used internally unless you're doing something funky
+		Use add() to add an object to the list, not this.
 	 */
 	this.addNode = function (obj) {
-		var node = new LinkedListNode();
+		var node = new vgp.LinkedListNode();
+		if (!obj.uniqueID) {
+			try {
+				obj.uniqueID = LinkedList.generateID();
+				console.log('New ID: '+obj.uniqueID);
+			}
+			catch (err) {
+				console.error('[LinkedList.addNode] obj passed is immutable: cannot attach necessary identifier');
+				return null;
+			}
+		}
+		
 		node.obj = obj;
-		node.prev = null;
-		node.next = null;
 		node.free = false;
-		this.objToNodeMap[obj.uniqueId] = node;
+		this.objToNodeMap[obj.uniqueID] = node;
 		return node;
 	};
+	
+	this.swapObjects = function(node, newObj) {
+		this.objToNodeMap[node.obj.uniqueID] = null;
+		this.objToNodeMap[newObj.uniqueID] = node;
+		node.obj = newObj;
+	};
 
-	/**
-	 * Add an item to the list
-	 * @param obj The object to add
+	/*
+		Add an item to the list
+		@param obj The object to add
 	 */
 	this.add = function (obj) {
-		var node = this.objToNodeMap[obj.uniqueId];
+		var node = this.objToNodeMap[obj.uniqueID];
 		
 		if (!node) {
 			node = this.addNode(obj);
@@ -95,8 +102,8 @@ LinkedList = function() {
 			node.next = null; // clear just in case
 			node.prev = null;
 		} else {
-			if (this.last == null) {
-				throw new Error("Hmm, no last in the list -- that shouldn't happen here");
+			if (!this.last) {
+				throw new Error("[LinkedList.add] No last in the list -- that shouldn't happen here");
 			}
 
 			// add this entry to the end of the list
@@ -111,18 +118,18 @@ LinkedList = function() {
 	};
 
 	this.has = function (obj) {
-		return !!this.objToNodeMap[obj.uniqueId];
+		return !!this.objToNodeMap[obj.uniqueID];
 	};
 
-	/**
-	 * Moves this item upwards in the list
-	 * @param obj
+	/*
+		Moves this item upwards in the list
+		@param obj
 	 */
 	this.moveUp = function (obj) {
 		this.dump('before move up');
 		var c = this.getNode(obj);
 		if (!c) throw "Oops, trying to move an object that isn't in the list";
-		if (c.prev == null) return; // already first, ignore
+		if (!c.prev) return; // already first, ignore
 
 		// This operation makes C swap places with B:
 		// A <-> B <-> C <-> D
@@ -147,14 +154,14 @@ LinkedList = function() {
 		if (this.first == b) this.first = c;
 	};
 
-	/**
-	 * Moves this item downwards in the list
-	 * @param obj
+	/*
+		Moves this item downwards in the list
+		@param obj
 	 */
 	this.moveDown = function (obj) {
 		var b = this.getNode(obj);
 		if (!b) throw "Oops, trying to move an object that isn't in the list";
-		if (b.next == null) return; // already last, ignore
+		if (!b.next) return; // already last, ignore
 
 		// This operation makes B swap places with C:
 		// A <-> B <-> C <-> D
@@ -167,49 +174,48 @@ LinkedList = function() {
 		if (this.last == c) this.last = b;
 	};
 	
-	/**
-	 * Take everything off the list and put it in an array, sort it, then put it back.
+	/*
+		Take everything off the list and put it in an array, sort it, then put it back.
 	 */
 	this.sort = function (compare) {
-		var sortArray = [];
+		var sortArray = this.sortArray;
 		var i, l, node = this.first;
+		sortArray.length = 0;
 		
 		while (node) {
-			sortArray.push(node.object());
-			node = node.next();
+			sortArray.push(node.obj);
+			node = node.next;
 		}
 		
 		this.clear();
 		
 		sortArray.sort(compare);
-
+		// console.log(sortArray);
 		l = sortArray.length;
 		for (i = 0; i < l; i++) {
 			this.add(sortArray[i]);
 		}
 	};
 
-	/**
-	 * Removes an item from the list
-	 * @param obj The object to remove
-	 * @returns boolean true if the item was removed, false if the item was not on the list
+	/*
+		Removes an item from the list
+		@param obj The object to remove
+		@returns boolean true if the item was removed, false if the item was not on the list
 	 */
 	this.remove = function (obj) {
 		var node = this.getNode(obj);
-		if (node == null || node.free == true){
+		if (!node || node.free){
 			return false; // ignore this error (trying to remove something not there)
 		}
 
 		// pull this object out and tie up the ends
-		if (node.prev != null)
-			node.prev.next = node.next;
-		if (node.next != null)
-			node.next.prev = node.prev;
+		if (node.prev) node.prev.next = node.next;
+		if (node.next) node.next.prev = node.prev;
 
 		// fix first and last
-		if (node.prev == null) // if this was first on the list
+		if (!node.prev) // if this was first on the list
 			this.first = node.next; // make the next on the list first (can be null)
-		if (node.next == null) // if this was the last
+		if (!node.next) // if this was the last
 			this.last = node.prev; // then this node's previous becomes last
 
 		node.free = true;
@@ -271,6 +277,17 @@ LinkedList = function() {
 		this.length--;
 		return node.obj;
 	};
+	
+	/**
+	 * Add the passed list to this list, leaving it untouched.
+	 */
+	this.concat = function(list) {
+		var node = list.first;
+		while (node) {
+			this.add(node.obj);
+			node = node.next;
+		}
+	};
 
 	/**
 	 * Clears the list out
@@ -287,7 +304,7 @@ LinkedList = function() {
 		this.length = 0;
 	};
 	
-	this.destroy = function() {
+	this.dispose = function() {
 		var next = this.first;
 		
 		while (next) {
@@ -299,13 +316,13 @@ LinkedList = function() {
 		this.objToNodeMap = null;
 	};
 
-	/**
-	 * Outputs the contents of the current list for debugging.
+	/*
+		Outputs the contents of the current list for debugging.
 	 */
 	this.dump = function(msg) {
 		console.log('====================' + msg + '=====================');
 		var a = this.first;
-		while (a != null) {
+		while (a) {
 			console.log("{" + a.obj.toString() + "} previous=" + ( a.prev ? a.prev.obj : "NULL"));
 			a = a.next();
 		}
@@ -313,4 +330,9 @@ LinkedList = function() {
 		console.log("Last: {" + (this.last ? this.last.obj : 'NULL') + "} " +
 			"First: {" + (this.first ? this.first.obj : 'NULL') + "}");
 	};
+};
+
+// static function for utility
+vgp.LinkedList.generateID = function() {
+	return Math.random().toString(36).slice(2) + Date.now();
 };

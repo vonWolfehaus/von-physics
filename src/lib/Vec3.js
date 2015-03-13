@@ -1,0 +1,1 @@
+vgp.Vec = THREE.Vector3; // yup

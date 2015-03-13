@@ -1,0 +1,36 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	color: #000;
+	background: #fff;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	text-align: center;
+}
+
+nav.primary {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	text-align: center;
+	margin: 20px;
+}
+
+button {
+	padding: 5px 10px;
+	margin: 0 10px;
+}
+
+#status {
+	position: absolute;
+	top: 20px;
+	font-weight: bold;
+	font-size: 20px;
+}

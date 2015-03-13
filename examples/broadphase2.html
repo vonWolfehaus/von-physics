@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv='X-UA-Compatible' content='IE=edge' />
+	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0' />
+	<meta name="author" content="Corey Birnbaum" />
+	<title>Grid</title>
+	
+	<link href="normalize.css" rel="stylesheet" type="text/css"/>
+	<link href="style.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+	
+	<canvas id="view"></canvas>
+
+<!-- framework setup -->
+<script type="text/javascript" src="../src/vgp.js"></script>
+<script type="text/javascript" src="../src/utils.js"></script>
+
+<!-- framework dependencies - feel free to substitute with your own versions -->
+<script type="text/javascript" src="../src/lib/Vec2.js"></script>
+<script type="text/javascript" src="../src/lib/LinkedList.js"></script>
+<script type="text/javascript" src="../src/lib/Signal.js"></script>
+
+<!-- core physics framework -->
+<script type="text/javascript" src="../src/physics/Manifold.js"></script>
+<script type="text/javascript" src="../src/physics/physics2.js"></script>
+<script type="text/javascript" src="../src/physics/AABB2.js"></script>
+<script type="text/javascript" src="../src/physics/Radial2.js"></script>
+<script type="text/javascript" src="../src/ObjectPool.js"></script>
+<script type="text/javascript" src="../src/WorldGrid2.js"></script>
+
+<!-- demo objects -->
+<script type="text/javascript" src="draw.js"></script>
+<script type="text/javascript" src="View2.js"></script>
+<script type="text/javascript" src="Wander2.js"></script>
+<script type="text/javascript" src="Entity.js"></script>
+
+<script type="text/javascript">
+// replace this with your own global static object and don't forget to do a find-replace too
+var game = {
+	world: null
+};
+
+window.addEventListener('load', function(evt) {
+	var c = document.getElementById('view');
+	c.width = window.innerWidth;
+	c.height = window.innerHeight;
+	var ctx = c.getContext('2d');
+	
+	// init
+	var w = new vgp.World(60);
+	w.context = ctx; // optional (for debug drawing)
+	w.setBounds(800, 800); // optional if you don't use boundary behaviors
+	w.gravity = 0;
+	w.friction = 0.9;
+	
+	// setup
+	game.world = w;
+	
+	var entitySettings = {
+		size: 25,
+		PhysicsComponent: vgp.Radial2, // or vgp.AABB2
+		ViewComponent: View2,
+		BehaviorComponent: Wander2
+	};
+	var entities = [];
+	var i, o, e;
+	for (i = 0; i < 150; i++) {
+		o = new Entity(entitySettings);
+		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y));
+		entities.push(o);
+	}
+	
+	// all you need to do is update entities, then update the world they're in
+	function update() {
+		window.requestAnimationFrame(update);
+		if (!w.active) {
+			return;
+		}
+		
+		ctx.clearRect(0, 0, c.width, c.height);
+		
+		for (i = 0; e = entities[i]; i++) {
+			if (e.active) e.update();
+		}
+		
+		w.update();
+	}
+	
+	// startup
+	update();
+	
+	document.addEventListener('keydown', function(evt) {
+		if (evt.which == 32) { // space
+			w.active = !w.active;
+		}
+	}, false);
+}, false);
+</script>
+</body>
+</html>
