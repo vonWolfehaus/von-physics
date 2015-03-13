@@ -21,7 +21,6 @@ vgp.AABB2 = function(entity, settings) {
 	this.boundaryBehavior = vgp.Boundary.BOUNDARY_BOUNCE;
 	this.collisionID = this.uniqueID;
 	this.collisionGroup = null;
-	this._debugColor = 'rgba(9, 150, 232, 1)';
 	
 	this.onCollision = new vgp.Signal();
 	
@@ -34,6 +33,9 @@ vgp.AABB2 = function(entity, settings) {
 	
 	this.min = new vgp.Vec();
 	this.max = new vgp.Vec();
+	
+	this._hitBoundaryX = false;
+	this._hitBoundaryY = false;
 	
 	// init
 	this.update();
@@ -101,19 +103,40 @@ vgp.AABB2.prototype = {
 					if (this.position.x + this.offsetX < world.min.x) {
 						this.position.x = world.min.x - this.offsetX;
 						this.velocity.x = -this.velocity.x * this.restitution;
-						
-					} else if (this.position.x + this.width + this.offsetX > world.max.x) {
+						if (!this._hitBoundaryX) {
+							this._hitBoundaryX = true;
+							this.onCollision.dispatch(vgp.Boundary);
+						}
+					}
+					else if (this.position.x + this.width + this.offsetX > world.max.x) {
 						this.position.x = world.max.x - this.width - this.offsetX;
 						this.velocity.x = -this.velocity.x * this.restitution;
+						if (!this._hitBoundaryX) {
+							this._hitBoundaryX = true;
+							this.onCollision.dispatch(vgp.Boundary);
+						}
 					}
-					
+					else {
+						this._hitBoundaryX = false;
+					}
 					if (this.position.y + this.offsetY < world.min.y) {
 						this.position.y = world.min.y - this.offsetY;
 						this.velocity.y = -this.velocity.y * this.restitution;
-						
-					} else if (this.position.y + this.height + this.offsetY > world.max.y) {
+						if (!this._hitBoundaryY) {
+							this._hitBoundaryY = true;
+							this.onCollision.dispatch(vgp.Boundary);
+						}
+					}
+					else if (this.position.y + this.height + this.offsetY > world.max.y) {
 						this.position.y = world.max.y - this.height - this.offsetY;
 						this.velocity.y = -this.velocity.y * this.restitution;
+						if (!this._hitBoundaryY) {
+							this._hitBoundaryY = true;
+							this.onCollision.dispatch(vgp.Boundary);
+						}
+					}
+					else {
+						this._hitBoundaryY = false;
 					}
 					break;
 					
@@ -121,14 +144,16 @@ vgp.AABB2.prototype = {
 					if (this.position.x + this.offsetX < world.min.x) {
 						this.position.x += world.max.x - this.offsetX - this.width;
 						
-					} else if (this.position.x + this.width + this.offsetX > world.max.x) {
+					}
+					else if (this.position.x + this.width + this.offsetX > world.max.x) {
 						this.position.x -= world.max.x - this.width - this.offsetX;
 					}
 					
 					if (this.position.y + this.offsetY < world.min.y) {
 						this.position.y += world.max.y - this.offsetY - this.height;
 						
-					} else if (this.position.y + this.height + this.offsetY > world.max.y) {
+					}
+					else if (this.position.y + this.height + this.offsetY > world.max.y) {
 						this.position.y -= world.max.y - this.height - this.offsetY;
 					}
 					break;

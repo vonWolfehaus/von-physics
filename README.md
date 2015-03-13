@@ -1,6 +1,6 @@
 # Game Physics
 
-![screenshot](vgp-3d-sphere.jpg)
+![screenshot](von-physics.jpg)
 
 After implementing far too many collision detection algorithms in my various experiments and games since 2009, I've decided enough is enough and compiled this tiny library of just the raw math behind collision detection and physical response.
 
@@ -11,6 +11,8 @@ Features:
 * Signal dispatch on collision that provides a manifold describing the collision (and with what, obviously)
 * "World" class with friction, gravity, and boundaries (infinity works too)
 * Memory-efficient broadphase (2D static grid)
+
+Bonus 2D and 3D wandering behavior in the examples.
 
 ## Full engines with readable code
 

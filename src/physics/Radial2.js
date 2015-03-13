@@ -106,7 +106,6 @@ vgp.Radial2.prototype = {
 							this._hitBoundaryX = true;
 							this.onCollision.dispatch(vgp.Boundary);
 						}
-						
 					}
 					else if (this.position.x + this.radius + this.offsetX > world.max.x) {
 						this.position.x = world.max.x - this.radius - this.offsetX;
@@ -126,7 +125,6 @@ vgp.Radial2.prototype = {
 							this._hitBoundaryY = true;
 							this.onCollision.dispatch(vgp.Boundary);
 						}
-						
 					}
 					else if (this.position.y + this.radius + this.offsetY > world.max.y) {
 						this.position.y = world.max.y - this.radius - this.offsetY;
