@@ -1,4 +1,4 @@
-# Game Physics
+# "Arcade"-style game physics
 
 ![screenshot](von-physics.jpg)
 
@@ -27,8 +27,8 @@ These are engines that have fancy things like rotational torque, joints, and so 
 * [Coffee physics](https://github.com/soulwire/Coffee-Physics/blob/master/source/behaviour/Collision.coffee)
 * [Impulse](https://github.com/dubrowgn/Impulse.js/blob/master/src/Shape2D.js)
 * [Matter](http://brm.io/matter-js/)
-* [microphysics](https://github.com/jeromeetienne/microphysics.js) - I used this for the 3D stuff here
-* [phys](https://github.com/AbhiAgarwal/phys.js) - Algorithms for electromagnetics, thermal, quantum, etc
+* [microphysics](https://github.com/jeromeetienne/microphysics.js)
+* [phys](https://github.com/AbhiAgarwal/phys.js) - algorithms for electromagnetics, thermal, quantum, etc
 
 ## Resources
 
