@@ -21,7 +21,7 @@ vgp.World = function(cellSize) {
 	this.bounded = false;
 	// universal properties all entities abide by (applied in physics component)
 	this.friction = 0.8;
-	this.gravity = 10;
+	this.gravity = new vgp.Vec();
 	// elapsed will probably sit elsewhere in your game, just find-replace with your own
 	this.elapsed = 0.0166;
 	/*

@@ -7,12 +7,16 @@ After implementing far too many collision detection algorithms in my various exp
 It is meant to provide the minimal (and in most cases sufficient) system necessary for creating high performance real-time applications with dynamic objects interacting with each other.
 
 Features:
-* Detection and response for axis-aligned 2D and 3D boxes and spheres
-* Signal dispatch on collision that provides a manifold describing the collision (and with what, obviously)
+* Most efficient techniques for performant detection and response for axis-aligned 2D and 3D boxes and radial colliders
+* Mass and restitution only (sometimes less is more)
+* Continuous collision detection for 2D and 3D radial colliders
+* Signal dispatch on collision that provides collided entity and manifold describing the collision
 * "World" class with friction, gravity, and boundaries (infinity works too)
 * Memory-efficient broadphase (2D static grid)
 
 Bonus 2D and 3D wandering behavior in the examples.
+
+**Note:** If you use continuous detection and the broadphase grid, it can still miss some collisions because it doesn't check cells that the collider will be in after velocity is applied (it only uses position).
 
 ## Full engines with readable code
 

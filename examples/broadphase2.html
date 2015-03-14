@@ -53,15 +53,15 @@ window.addEventListener('load', function(evt) {
 	var w = new vgp.World(60);
 	w.context = ctx; // optional (for debug drawing)
 	w.setBounds(800, 800); // optional if you don't use boundary behaviors
-	w.gravity = 0;
-	w.friction = 0.9;
+	// w.gravity.set(0, 9.8);
+	w.friction = 0.98;
 	
 	// setup
 	game.world = w;
 	
 	var entitySettings = {
 		size: 25,
-		PhysicsComponent: vgp.Radial2, // or vgp.AABB2
+		PhysicsComponent: vgp.Radial2, // vgp.Radial2 or vgp.AABB2
 		ViewComponent: View2,
 		BehaviorComponent: Wander2
 	};

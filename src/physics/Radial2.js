@@ -11,7 +11,8 @@ vgp.Radial2 = function(entity, settings) {
 	this.offsetX = 0;
 	this.offsetY = 0;
 	this.maxSpeed = 10;
-	
+	// if this collider will go faster than its radius in one frame, it's continuous (like a bullet)
+	this.continuous = false;
 	this.mass = 100; // 0 is immobile
 	this.invmass = 0; // never adjust this directly! use setMass() instead
 	this.restitution = 0.8; // bounciness, 0 to 1
@@ -35,10 +36,11 @@ vgp.Radial2 = function(entity, settings) {
 	
 	this._hitBoundaryX = false;
 	this._hitBoundaryY = false;
+	this._v = new vgp.Vec();
 	
 	// init
-	this.update();
 	this.setMass(this.mass);
+	this.update();
 };
 
 vgp.Radial2.prototype = {
@@ -73,18 +75,19 @@ vgp.Radial2.prototype = {
 	
 	update: function() {
 		var world = game.world;
+		var l = this.accel.getLength();
+		if (l !== 0 && l > this.maxSpeed) { // truncate
+			this.accel.divideScalar(l);
+			this.accel.multiplyScalar(this.maxSpeed);
+		}
 		
-		this.accel.y += world.gravity * world.elapsed;
-		this.accel.truncate(this.maxSpeed);
+		this.accel.add(world.gravity);
 		
-		this.velocity.x *= world.friction;
-		this.velocity.y *= world.friction;
+		this.velocity.multiplyScalar(world.friction);
+		this.velocity.add(this.accel);
 		
-		this.velocity.x += this.accel.x;
-		this.velocity.y += this.accel.y;
-		
-		this.position.x += this.velocity.x * world.elapsed;
-		this.position.y += this.velocity.y * world.elapsed;
+		this._v.copy(this.velocity).multiplyScalar(world.elapsed);
+		this.position.add(this._v);
 		
 		if (world.bounded) {
 			switch (this.boundaryBehavior) {

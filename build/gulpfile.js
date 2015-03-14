@@ -41,3 +41,5 @@ gulp.task('3d', function() {
 	.pipe(uglify())
 	.pipe(gulp.dest('../'));
 });
+
+gulp.task('default', ['2d', '3d']);

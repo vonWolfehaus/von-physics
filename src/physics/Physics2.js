@@ -1,11 +1,14 @@
 vgp.physics = {
 	// scratch objects
 	_scratch: new vgp.Vec(),
+	_scratch2: new vgp.Vec(),
 	_normal: new vgp.Vec(),
 	_impulse: new vgp.Vec(),
 	_manifold: new vgp.Manifold(),
 	_separateStr: 'separate',
 	_testStr: 'test',
+	
+	elapsed: 0.01666,
 	
 	resolve: function(a, b, m) {
 		// Calculate relative velocity
@@ -159,44 +162,94 @@ vgp.physics = {
 	},
 	
 	separateCircleCircle: function(a, b) {
-		var dx = b.position.x - a.position.x;
-		var dy = b.position.y - a.position.y;
-		var dist = (dx * dx) + (dy * dy);
+		// relative position
+		this._scratch.copy(b.position).sub(a.position);
+		
 		var radii = a.radius + b.radius;
 		var rSqr = radii * radii;
-		var cim, j, correctionX, correctionY;
+		var dist = this._scratch.dot(this._scratch);
 		
 		if (dist < rSqr) {
+			// already overlapping, so calculate penetration and move them back out
 			dist = Math.sqrt(dist);
 			
 			if (dist === 0)  {
-				dist = a.radius + b.radius - 1;
-				dx = dy = radii;
+				dist = radii - 1;
+				this._scratch.set(radii, radii, radii);
 				
 				this._manifold.penetration = a.radius;
-				this._manifold.normal.set(1, 0);
+				this._manifold.normal.set(1, 0, 0); // pick one, doesn't matter
 				
 			} else {
-				this._manifold.penetration = rSqr - dist;
-				this._manifold.normal.set(dx, dy).normalize();
+				this._manifold.penetration = radii - dist;
+				this._manifold.normal.copy(this._scratch).normalize();
 			}
 			
-			j = (radii - dist) / dist;
+			// separate
+			var j = (radii - dist) / dist;
+			var cim = a.invmass + b.invmass;
 			
-			correctionX = dx * j;
-			correctionY = dy * j;
-			
-			cim = a.invmass + b.invmass;
-			a.position.x -= correctionX * (a.invmass / cim);
-			a.position.y -= correctionY * (a.invmass / cim);
-			
-			b.position.x += correctionX * (b.invmass / cim);
-			b.position.y += correctionY * (b.invmass / cim);
+			this._scratch.multiplyScalar(j); // correction amount
+			this._scratch2.copy(this._scratch); // copy for use with b
+			// move a away
+			this._scratch.multiplyScalar(a.invmass / cim);
+			a.position.sub(this._scratch);
+			// move b
+			this._scratch2.multiplyScalar(b.invmass / cim);
+			b.position.add(this._scratch2);
 			
 			return this._manifold;
 		}
 		
-		return null;
+		if (!a.continuous && !b.continuous) {
+			// don't make them continuous if you know they will only move slow enough (velocity.length < radius)
+			return null;
+		}
+		
+		// they went further than their radius this frame, so sweep to check if they hit between pos and pos+vel
+		if (dist - rSqr < 0) {
+			// console.log('no overlap');
+			return null;
+		}
+		
+		// relative velocity, taking into account delta time so it's scaled properly
+		this._scratch2.copy(b.velocity).sub(a.velocity).multiplyScalar(this.elapsed);
+		
+		this._impulse.copy(a.velocity).multiplyScalar(this.elapsed);
+		var sva = this._impulse.dot(this._impulse);
+		this._impulse.copy(b.velocity).multiplyScalar(this.elapsed);
+		
+		if (sva + this._impulse.dot(this._impulse) + rSqr < dist) {
+			// console.log('too far away');
+			return null;
+		}
+		
+		var vd = this._scratch2.dot(this._scratch2);
+		var vs = this._scratch2.dot(this._scratch);
+		if (vs >= 0) {
+			// console.log('not moving towards each other');
+			return null;
+		}
+
+		var d = (vs * vs) - (vd * (dist - rSqr));
+		if (d < 0) {
+			// console.log('no roots...');
+			return null;
+		}
+
+		var t = (-vs - Math.sqrt(d)) / vd;
+		
+		// place them where the collision will happen
+		this._scratch2.copy(a.velocity).multiplyScalar(this.elapsed).multiplyScalar(t);
+		a.position.add(this._scratch2);
+		
+		this._scratch2.copy(b.velocity).multiplyScalar(this.elapsed).multiplyScalar(t);
+		b.position.add(this._scratch2);
+		
+		this._manifold.penetration = 0;
+		this._manifold.normal.copy(this._scratch).normalize();
+		
+		return this._manifold;
 	}
 	
 };

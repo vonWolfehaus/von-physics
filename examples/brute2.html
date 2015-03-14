@@ -53,7 +53,7 @@ window.addEventListener('load', function(evt) {
 	var w = new vgp.World();
 	w.context = ctx; // optional (for debug drawing)
 	w.setBounds(600, 600); // optional if you don't use boundary behaviors
-	w.gravity = 0;
+	// w.gravity.set(0, 9.8); // stacking colliders are way more unstable without a broadphase
 	w.friction = 0.9;
 	
 	// setup
@@ -67,7 +67,7 @@ window.addEventListener('load', function(evt) {
 	};
 	var entities = [];
 	var i, o, e, l;
-	for (i = 0; i < 50; i++) {
+	for (i = 0; i < 75; i++) {
 		o = new Entity(entitySettings);
 		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y));
 		entities.push(o);
