@@ -41,7 +41,7 @@ vgp.physics = {
 			return this[this._testStr+a.type+b.type](a, b);
 		}
 		else {
-			throw new Error('Sorry, mixed collider types are not yet supported');
+			throw new Error('Sorry, mixed collider types are not supported');
 			if (a.type === vgp.Type.AABB) {
 				return this.testAABBCircle(a, b);
 			}
@@ -57,7 +57,7 @@ vgp.physics = {
 			return this[this._separateStr+a.type+b.type](a, b);
 		}
 		else {
-			throw new Error('Sorry, mixed collider types are not yet supported');
+			throw new Error('Sorry, mixed collider types are not supported');
 			if (a.type === vgp.Type.AABB) {
 				return this.separateAABBCircle(a, b);
 			}
@@ -100,48 +100,41 @@ vgp.physics = {
 		// Calculate overlap on x axis
 		var x_overlap = a_extent + b_extent - Math.abs(this._normal.x);
 		
-		// SAT test on x axis
-		if (x_overlap > 0) {
-			a_extent = (a.max.y - a.min.y) * 0.5;
-			b_extent = (b.max.y - b.min.y) * 0.5;
-			
-			// Calculate overlap on y axis
-			var y_overlap = a_extent + b_extent - Math.abs(this._normal.y);
-			
-			// SAT test on y axis
-			if (y_overlap > 0) {
-				// Find out which axis is axis of least penetration
-				if (x_overlap < y_overlap) {
-					// Point towards B knowing that dist points from A to B
-					if (this._normal.x < 0) {
-						this._manifold.normal.set(-1, 0);
-					} else {
-						this._manifold.normal.set(1, 0);
-					}
-					this._manifold.penetration = x_overlap;
-				} else {
-					// Point toward B knowing that dist points from A to B
-					if (this._normal.y < 0) {
-						this._manifold.normal.set(0, -1);
-					} else {
-						this._manifold.normal.set(0, 1);
-					}
-					this._manifold.penetration = y_overlap;
-				}
-				
-				var correctionX = this._manifold.penetration * this._manifold.normal.x;
-				var correctionY = this._manifold.penetration * this._manifold.normal.y;
-				var cim = a.invmass + b.invmass;
-				a.position.x -= correctionX * (a.invmass / cim);
-				a.position.y -= correctionY * (a.invmass / cim);
-				
-				b.position.x += correctionX * (b.invmass / cim);
-				b.position.y += correctionY * (b.invmass / cim);
-				
-				return this._manifold;
+		a_extent = (a.max.y - a.min.y) * 0.5;
+		b_extent = (b.max.y - b.min.y) * 0.5;
+		
+		// Calculate overlap on y axis
+		var y_overlap = a_extent + b_extent - Math.abs(this._normal.y);
+		
+		// Find out which axis is axis of least penetration
+		if (x_overlap < y_overlap) {
+			// Point towards B knowing that dist points from A to B
+			if (this._normal.x < 0) {
+				this._manifold.normal.set(-1, 0);
+			} else {
+				this._manifold.normal.set(1, 0);
 			}
+			this._manifold.penetration = x_overlap;
+		} else {
+			// Point toward B knowing that dist points from A to B
+			if (this._normal.y < 0) {
+				this._manifold.normal.set(0, -1);
+			} else {
+				this._manifold.normal.set(0, 1);
+			}
+			this._manifold.penetration = y_overlap;
 		}
-		return null;
+		
+		var correctionX = this._manifold.penetration * this._manifold.normal.x;
+		var correctionY = this._manifold.penetration * this._manifold.normal.y;
+		var cim = a.invmass + b.invmass;
+		a.position.x -= correctionX * (a.invmass / cim);
+		a.position.y -= correctionY * (a.invmass / cim);
+		
+		b.position.x += correctionX * (b.invmass / cim);
+		b.position.y += correctionY * (b.invmass / cim);
+		
+		return this._manifold;
 	},
 	
 	/**

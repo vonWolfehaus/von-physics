@@ -10,7 +10,7 @@ vgp.Radial3 = function(entity, settings) {
 	this.radius = 10;
 	this.maxSpeed = 20;
 	// if this collider will go faster than its radius in one frame, it's continuous (like a bullet)
-	this.continuous = true;
+	this.continuous = false;
 	this.mass = 50; // 0 is immobile
 	this.restitution = 0.8; // bounciness, 0 to 1
 	

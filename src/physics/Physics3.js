@@ -1,57 +1,14 @@
 vgp.physics = {
 	// scratch objects
 	_scratch: new vgp.Vec(),
+	_scratch2: new vgp.Vec(),
 	_normal: new vgp.Vec(),
 	_impulse: new vgp.Vec(),
 	_manifold: new vgp.Manifold(),
 	_separateStr: 'separate',
 	_testStr: 'test',
 	
-	resolve_what: function(b1, b2, depth, xn, yn, zn, restitute) {
-		var v1x = b1.x - b1.px;
-        var v1y = b1.y - b1.py;
-        var v1z = b1.z - b1.pz;
-        var v2x = b2.x - b2.px;
-        var v2y = b2.y - b2.py;
-        var v2z = b2.z - b2.pz;
-
-        var mt = b1.inv_mass + b2.inv_mass;
-        var f1 = b1.inv_mass/mt;
-        var f2 = b2.inv_mass/mt;
-
-        var off1 = depth*f1;
-        var off2 = depth*f2;
-
-        b1.x += xn*off1;
-        b1.y += yn*off1;
-        b1.z += zn*off1;
-        b2.x -= xn*off2;
-        b2.y -= yn*off2;
-        b2.z -= zn*off2;
-                    
-        if(restitute){
-            var vrx = v1x - v2x;
-            var vry = v1y - v2y;
-            var vrz = v1z - v2z;
-
-            var vdotn = vrx*xn + vry*yn + vrz*zn;
-            var modified_velocity = vdotn/mt;
-
-            var j1 = -(1+b2.restitution)*modified_velocity*b1.inv_mass;
-            var j2 = -(1+b1.restitution)*modified_velocity*b2.inv_mass;
-
-            v1x += j1 * xn
-            v1y += j1 * yn
-            v1z += j1 * zn
-
-            v2x -= j2 * xn
-            v2y -= j2 * yn
-            v2z -= j2 * zn
-            
-            b1.setVelocity(v1x, v1y, v1z);
-            b2.setVelocity(v2x, v2y, v2z);
-        }
-	},
+	elapsed: 0.01666,
 	
 	resolve: function(a, b, m) {
 		// Calculate relative velocity
@@ -89,7 +46,7 @@ vgp.physics = {
 			return this[this._testStr+a.type+b.type](a, b);
 		}
 		else {
-			throw new Error('Sorry, mixed collider types are not yet supported');
+			throw new Error('Sorry, mixed collider types are not supported');
 			if (a.type === vgp.Type.AABB3) {
 				return this.testAABB3Sphere(a, b);
 			}
@@ -118,12 +75,12 @@ vgp.physics = {
 	
 	/**
 	 AABB3 = {
-	 	position <vgp.Vec> - center position in global space
-	 	velocity <vgp.Vec> - yes
-	 	min <vgp.Vec> - position in global coordinates of top-left corner
-	 	max <vgp.Vec> - position in global coordinates of bottom-right corner
-	 	invmas <number> - 1 / mass
-	 	restitution <number> - bounciness, 0 to 1
+		position <vgp.Vec> - center position in global space
+		velocity <vgp.Vec> - yes
+		min <vgp.Vec> - position in global coordinates of top-left corner
+		max <vgp.Vec> - position in global coordinates of bottom-right corner
+		invmas <number> - 1 / mass
+		restitution <number> - bounciness, 0 to 1
 	 }
 	 */
 	
@@ -139,69 +96,84 @@ vgp.physics = {
 		if (a.max.x < b.min.x || a.min.x > b.max.x) return null;
 		if (a.max.y < b.min.y || a.min.y > b.max.y) return null;
 		if (a.max.z < b.min.z || a.min.z > b.max.z) return null;
-		return null;
+		
 		// Vector from A to B
 		this._normal.set(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z - a.position.z);
 		
 		// Calculate half extents along x axis for each object
 		var a_extent = (a.max.x - a.min.x) * 0.5;
 		var b_extent = (b.max.x - b.min.x) * 0.5;
-		var b_extent = (b.max.x - b.min.x) * 0.5;
-		
-		// Calculate overlap on x axis
+		// Calculate overlaps
 		var x_overlap = a_extent + b_extent - Math.abs(this._normal.x);
 		
-		// SAT test on x axis
-		if (x_overlap > 0) {
-			a_extent = (a.max.y - a.min.y) * 0.5;
-			b_extent = (b.max.y - b.min.y) * 0.5;
-			
-			// Calculate overlap on y axis
-			var y_overlap = a_extent + b_extent - Math.abs(this._normal.y);
-			
-			// SAT test on y axis
-			if (y_overlap > 0) {
-				// Find out which axis is axis of least penetration
-				if (x_overlap < y_overlap) {
-					// Point towards B knowing that dist points from A to B
-					if (this._normal.x < 0) {
-						this._manifold.normal.set(-1, 0);
-					} else {
-						this._manifold.normal.set(1, 0);
-					}
-					this._manifold.penetration = x_overlap;
+		a_extent = (a.max.y - a.min.y) * 0.5;
+		b_extent = (b.max.y - b.min.y) * 0.5;
+		var y_overlap = a_extent + b_extent - Math.abs(this._normal.y);
+		
+		a_extent = (a.max.z - a.min.z) * 0.5;
+		b_extent = (b.max.z - b.min.z) * 0.5;
+		var z_overlap = a_extent + b_extent - Math.abs(this._normal.z);
+		
+		// Find out which axis is axis of least penetration
+		if (x_overlap < y_overlap) {
+			if (z_overlap < x_overlap) {
+				if (this._normal.z < 0) {
+					this._manifold.normal.set(0, 0, -1);
 				} else {
-					// Point toward B knowing that dist points from A to B
-					if (this._normal.y < 0) {
-						this._manifold.normal.set(0, -1);
-					} else {
-						this._manifold.normal.set(0, 1);
-					}
-					this._manifold.penetration = y_overlap;
+					this._manifold.normal.set(0, 0, 1);
 				}
-				
-				var correctionX = this._manifold.penetration * this._manifold.normal.x;
-				var correctionY = this._manifold.penetration * this._manifold.normal.y;
-				var cim = a.invmass + b.invmass;
-				a.position.x -= correctionX * (a.invmass / cim);
-				a.position.y -= correctionY * (a.invmass / cim);
-				
-				b.position.x += correctionX * (b.invmass / cim);
-				b.position.y += correctionY * (b.invmass / cim);
-				
-				return this._manifold;
+				this._manifold.penetration = z_overlap;
+			}
+			else {
+				if (this._normal.x < 0) {
+					this._manifold.normal.set(-1, 0, 0);
+				} else {
+					this._manifold.normal.set(1, 0, 0);
+				}
+				this._manifold.penetration = x_overlap;
 			}
 		}
-		return null;
+		else {
+			if (z_overlap < y_overlap) {
+				if (this._normal.z < 0) {
+					this._manifold.normal.set(0, 0, -1);
+				} else {
+					this._manifold.normal.set(0, 0, 1);
+				}
+				this._manifold.penetration = z_overlap;
+			}
+			else {
+				if (this._normal.y < 0) {
+					this._manifold.normal.set(0, -1, 0);
+				} else {
+					this._manifold.normal.set(0, 1, 0);
+				}
+				this._manifold.penetration = y_overlap;
+			}
+		}
+		
+		this._scratch.copy(this._manifold.normal).multiplyScalar(this._manifold.penetration);
+		this._scratch2.copy(this._scratch); // copy for use with b
+		
+		var cim = a.invmass + b.invmass;
+		// move a away
+		this._scratch.multiplyScalar(a.invmass / cim);
+		a.position.sub(this._scratch);
+		// move b
+		this._scratch2.multiplyScalar(b.invmass / cim);
+		b.position.add(this._scratch2);
+		
+		return this._manifold;
 	},
 	
 	/**
 	 Sphere = {
-	 	position <vgp.Vec> - center position in global space
-	 	velocity <vgp.Vec> - yes
-	 	radius <number> - yup
-	 	invmas <number> - 1 / mass
-	 	restitution <number> - bounciness, 0 to 1
+		position <vgp.Vec> - center position in global space
+		velocity <vgp.Vec> - yes
+		radius <number> - yup
+		invmas <number> - 1 / mass
+		restitution <number> - bounciness, 0 to 1
+		continuous <number> - whether or not to do a sweep test (continuous collision detection)
 	 }
 	 */
 	
@@ -218,48 +190,149 @@ vgp.physics = {
 	},
 	
 	separateSphereSphere: function(a, b) {
-		var dx = b.position.x - a.position.x;
-		var dy = b.position.y - a.position.y;
-		var dz = b.position.z - a.position.z;
-		var dist = (dx * dx) + (dy * dy) + (dz * dz);
+		// relative position
+		this._scratch.copy(b.position).sub(a.position);
+		
 		var radii = a.radius + b.radius;
 		var rSqr = radii * radii;
-		var cim, j, correctionX, correctionY;
+		var dist = this._scratch.dot(this._scratch);
 		
 		if (dist < rSqr) {
+			// already overlapping, so calculate penetration and move them back out
 			dist = Math.sqrt(dist);
 			
 			if (dist === 0)  {
-				dist = a.radius + b.radius - 1;
-				dx = dy = dz = radii;
+				dist = radii - 1;
+				this._scratch.set(radii, radii, radii);
 				
 				this._manifold.penetration = a.radius;
-				this._manifold.normal.set(1, 0, 0);
+				this._manifold.normal.set(1, 0, 0); // pick one, doesn't matter
 				
 			} else {
-				this._manifold.penetration = rSqr - dist;
-				this._manifold.normal.set(dx, dy, dz).normalize();
+				this._manifold.penetration = radii - dist;
+				this._manifold.normal.copy(this._scratch).normalize();
 			}
 			
-			j = (radii - dist) / dist;
+			// separate
+			var j = (radii - dist) / dist;
+			var cim = a.invmass + b.invmass;
 			
-			correctionX = dx * j;
-			correctionY = dy * j;
-			correctionZ = dy * j;
+			this._scratch.multiplyScalar(j); // correction amount
+			this._scratch2.copy(this._scratch); // copy for use with b
+			// move a away
+			this._scratch.multiplyScalar(a.invmass / cim);
+			a.position.sub(this._scratch);
+			// move b
+			this._scratch2.multiplyScalar(b.invmass / cim);
+			b.position.add(this._scratch2);
 			
-			cim = a.invmass + b.invmass;
-			a.position.x -= correctionX * (a.invmass / cim);
-			a.position.y -= correctionY * (a.invmass / cim);
-			a.position.z -= correctionZ * (a.invmass / cim);
+			return this._manifold;
+		}
+		
+		if (!a.continuous && !b.continuous) {
+			// don't make them continuous if you know they will only move slow enough (velocity.length < radius)
+			return null;
+		}
+		
+		// they went further than their radius this frame, so sweep to check if they hit between pos and pos+vel
+		if (dist - rSqr < 0) {
+			// console.log('no overlap');
+			return null;
+		}
+		
+		// relative velocity, taking into account delta time so it's scaled properly
+		this._scratch2.copy(b.velocity).sub(a.velocity).multiplyScalar(this.elapsed);
+		
+		this._impulse.copy(a.velocity).multiplyScalar(this.elapsed);
+		var sva = this._impulse.dot(this._impulse);
+		this._impulse.copy(b.velocity).multiplyScalar(this.elapsed);
+		
+		if (sva + this._impulse.dot(this._impulse) + rSqr < dist) {
+			// console.log('too far away');
+			return null;
+		}
+		
+		var vd = this._scratch2.dot(this._scratch2);
+		var vs = this._scratch2.dot(this._scratch);
+		if (vs >= 0) {
+			// console.log('not moving towards each other');
+			return null;
+		}
+
+		var d = (vs * vs) - (vd * (dist - rSqr));
+		if (d < 0) {
+			// console.log('no roots...');
+			return null;
+		}
+
+		var t = (-vs - Math.sqrt(d)) / vd;
+		
+		// place them where the collision will happen
+		this._scratch2.copy(a.velocity).multiplyScalar(this.elapsed).multiplyScalar(t);
+		a.position.add(this._scratch2);
+		
+		this._scratch2.copy(b.velocity).multiplyScalar(this.elapsed).multiplyScalar(t);
+		b.position.add(this._scratch2);
+		
+		this._manifold.penetration = 0;
+		this._manifold.normal.copy(this._scratch).normalize();
+		
+		return this._manifold;
+	},
+	/*
+	none of this works, but if you do get it working, please create a pull request!
+	testAABB3Sphere: function(aabb, sphere) {
+		var squaredDistance = this.squaredDistPointAABB3(sphere.position, aabb);
+		return squaredDistance <= (sphere.radius * sphere.radius);
+	},
+	
+	separateAABB3Sphere: function(aabb, sphere) {
+		var squaredDistance = this.squaredDistPointAABB3(sphere.position, aabb);
+		var r = sphere.radius;
+		
+		if (squaredDistance <= r * r) {
+			var dist = Math.sqrt(squaredDistance);
+			this._scratch.copy(aabb.position).sub(sphere.position);
 			
-			b.position.x += correctionX * (b.invmass / cim);
-			b.position.y += correctionY * (b.invmass / cim);
-			b.position.z += correctionZ * (b.invmass / cim);
+			this._manifold.penetration = 0;
+			this._manifold.normal.copy(this._scratch).normalize();
+			
+			// separate
+			var j = (r - dist) / dist;
+			var cim = a.invmass + b.invmass;
+			
+			this._scratch.multiplyScalar(j); // correction amount
+			this._scratch2.copy(this._scratch); // copy for use with b
+			// move a away
+			this._scratch.multiplyScalar(a.invmass / cim);
+			a.position.sub(this._scratch);
+			// move b
+			this._scratch2.multiplyScalar(b.invmass / cim);
+			b.position.add(this._scratch2);
 			
 			return this._manifold;
 		}
 		
 		return null;
-	}
+	},
 	
+	check: function(v, bmin, bmax) {
+		var val, out = 0;
+		if (v < bmin) {
+			val = (bmin - v);
+			out += val * val;
+		}
+		if (v > bmax) {
+			val = (v - bmax);
+			out += val * val;
+		}
+		return out;
+	},
+	
+	squaredDistPointAABB3: function(p, aabb) {
+		var sq = 0;
+		sq += this.check(p.x, aabb.min.x, aabb.max.x);
+		sq += this.check(p.y, aabb.min.y, aabb.max.y);
+		sq += this.check(p.z, aabb.min.z, aabb.max.z);
+	}*/
 };

@@ -60,7 +60,7 @@ window.addEventListener('load', function(evt) {
 	// init
 	var w = new vgp.World();
 	w.setBounds(300, 200, 300); // optional if you don't use boundary behaviors
-	// w.gravity.set(0, -9.8, 0);
+	w.gravity.set(0, -9.8, 0);
 	w.friction = 0.98;
 	
 	// refocus the camera and light on the center of the World
@@ -77,34 +77,44 @@ window.addEventListener('load', function(evt) {
 	game.scene = scene;
 	
 	var size = 35;
-	var Body = vgp.Radial3; // vgp.AABB3 or vgp.Radial3
-
+	
 	var color = 'rgb(48, 184, 75)';
 	var mat = new THREE.MeshPhongMaterial({
 		color: color,
 		ambient: color
 	});
-	var geo;
-	if (Body === vgp.AABB3) {
-		geo = new THREE.BoxGeometry(size, size, size);
-	}
-	else {
-		geo = new THREE.SphereGeometry(size / 2, 10, 8);
-	}
 	
-	var entitySettings = {
+	var sphereGeo = new THREE.SphereGeometry(size / 2, 10, 8);
+	var boxGeo = new THREE.BoxGeometry(size, size, size);
+	
+	var sphereSettings = {
 		size: size,
-		PhysicsComponent: Body,
+		PhysicsComponent: vgp.Radial3,
 		ViewComponent: View3,
-		BehaviorComponent: Wander3,
+		// BehaviorComponent: Wander3,
 		material: mat,
-		geometry: geo
+		geometry: sphereGeo
+	};
+	
+	var boxSettings = {
+		size: size,
+		PhysicsComponent: vgp.AABB3,
+		ViewComponent: View3,
+		// BehaviorComponent: Wander3,
+		material: mat,
+		geometry: boxGeo
 	};
 	
 	var entities = [];
 	var i, o, e, l;
-	for (i = 0; i < 30; i++) {
-		o = new Entity(entitySettings);
+	for (i = 0; i < 10; i++) {
+		o = new Entity(sphereSettings);
+		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y), vgp.utils.randomInt(0, w.max.z));
+		entities.push(o);
+	}
+	
+	for (i = 0; i < 10; i++) {
+		o = new Entity(boxSettings);
 		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y), vgp.utils.randomInt(0, w.max.z));
 		entities.push(o);
 	}
