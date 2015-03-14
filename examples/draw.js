@@ -31,6 +31,15 @@ vgp.draw = {
 		ctx.fill();
 	},
 	
+	line: function(ctx, a, b, color) {
+		ctx.strokeStyle = color || 'rgba(250, 10, 10, 0.6)';
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.moveTo(a.x, a.y);
+		ctx.lineTo(b.x, b.y);
+		ctx.stroke();
+	},
+	
 	collider: function(body, color) {
 		switch (body.type) {
 			case vgp.Type.AABB2:

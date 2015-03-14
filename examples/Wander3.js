@@ -61,7 +61,7 @@ Wander3.prototype = {
 	
 	onCollision: function(other) {
 		if (other === vgp.Boundary) {
-			// prevent entity from banging against walls
+			// prevent entity from hugging walls
 			this._wanderVec.x = this.velocity.x;
 			this._wanderVec.y = this.velocity.y;
 			this._wanderVec.z = this.velocity.z;

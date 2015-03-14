@@ -144,15 +144,16 @@ Scene.prototype = {
 		this.camera.lookAt(obj.position);
 	},
 	
-	createGround: function(width, depth) {
+	createGround: function(width, depth, color) {
 		var geometry = new THREE.PlaneBufferGeometry(width, depth, 1, 1);
-		var planeMaterial = new THREE.MeshPhongMaterial({color: 0xcccccc});
+		var planeMaterial = new THREE.MeshPhongMaterial({color: color || 0xffffff});
 		planeMaterial.ambient = planeMaterial.color;
 
 		var ground = new THREE.Mesh(geometry, planeMaterial);
 		ground.rotation.x = - Math.PI / 2;
 		ground.castShadow = false;
 		ground.receiveShadow = true;
+		ground.scale.set(2, 2, 2);
 
 		this.container.add(ground);
 		

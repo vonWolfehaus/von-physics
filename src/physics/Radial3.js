@@ -8,16 +8,12 @@ vgp.Radial3 = function(entity, settings) {
 	
 	this.solid = true;
 	this.radius = 10;
-	this.offsetX = 0;
-	this.offsetY = 0;
-	this.offsetZ = 0;
-	this.maxSpeed = 10;
-	
+	this.maxSpeed = 20;
+	// if this collider will go faster than its radius in one frame, it's continuous (like a bullet)
+	this.continuous = true;
 	this.mass = 50; // 0 is immobile
-	this.invmass = 0; // never adjust this directly! use setMass() instead
 	this.restitution = 0.8; // bounciness, 0 to 1
 	
-	this.autoAdd = true;
 	this.boundaryBehavior = vgp.Boundary.BOUNDARY_BOUNCE;
 	this.collisionID = this.uniqueID;
 	this.collisionGroup = null;
@@ -27,16 +23,22 @@ vgp.Radial3 = function(entity, settings) {
 	// attribute override
 	vgp.utils.merge(this, settings);
 	
+	this.invmass = 0; // never adjust this directly! use setMass() instead
+	
 	this.position = entity && entity.position ? entity.position : new vgp.Vec();
 	this.velocity = entity && entity.velocity ? entity.velocity : new vgp.Vec();
 	this.accel = entity && entity.accel ? entity.accel : new vgp.Vec();
 	
 	this.min = new vgp.Vec();
 	this.max = new vgp.Vec();
+	// this.offset = new vgp.Vec();
+	// uncomment arrow stuff to visualize velocities
+	// this._arrow = new THREE.ArrowHelper(new vgp.Vec(), new vgp.Vec(), 40, '0x000000', 8, 10);
+	this._v = new vgp.Vec();
 	
 	// init
-	this.update();
 	this.setMass(this.mass);
+	this.update();
 };
 
 vgp.Radial3.prototype = {
@@ -44,9 +46,8 @@ vgp.Radial3.prototype = {
 	
 	activate: function() {
 		this.active = true;
-		if (this.autoAdd) {
-			game.world.add(this);
-		}
+		game.world.add(this);
+		// game.scene.add(this._arrow);
 		this.position = this.entity.position;
 	},
 	
@@ -55,6 +56,7 @@ vgp.Radial3.prototype = {
 		this.accel.set();
 		this.active = false;
 		game.world.remove(this);
+		// game.scene.remove(this._arrow);
 	},
 	
 	setMass: function(newMass) {
@@ -72,112 +74,98 @@ vgp.Radial3.prototype = {
 	
 	update: function() {
 		var world = game.world;
-		
-		this.accel.y += world.gravity * world.elapsed;
 		var l = this.accel.length();
-		if (l !== 0 && l > this.maxSpeed) {
+		if (l !== 0 && l > this.maxSpeed) { // truncate
 			this.accel.divideScalar(l);
 			this.accel.multiplyScalar(this.maxSpeed);
 		}
 		
-		this.velocity.x *= world.friction;
-		this.velocity.y *= world.friction;
-		this.velocity.z *= world.friction;
+		this.accel.add(world.gravity);
 		
-		this.velocity.x += this.accel.x;
-		this.velocity.y += this.accel.y;
-		this.velocity.z += this.accel.z;
+		this.velocity.multiplyScalar(world.friction);
+		this.velocity.add(this.accel);
 		
-		this.position.x += this.velocity.x * world.elapsed;
-		this.position.y += this.velocity.y * world.elapsed;
-		this.position.z += this.velocity.z * world.elapsed;
+		this._v.copy(this.velocity).multiplyScalar(world.elapsed);
+		this.position.add(this._v);
+		
+		/*this._v.copy(this.velocity).normalize();
+		this._arrow.position.copy(this.position);
+		this._arrow.setDirection(this._v);*/
+		
+		this.min.copy(this.position).subScalar(this.radius);
+		this.max.copy(this.position).addScalar(this.radius);
 		
 		if (world.bounded) {
 			switch (this.boundaryBehavior) {
 				case vgp.Boundary.BOUNDARY_DISABLE:
-					if (this.position.x + this.offsetX < world.min.x ||
-						this.position.x + this.radius + this.offsetX > world.max.x ||
-						this.position.y + this.offsetY < world.min.y ||
-						this.position.y + this.radius + this.offsetY > world.max.y) {
+					if (this.min.x < world.min.x || this.max.x > world.max.x ||
+						this.min.y < world.min.y || this.max.y > world.max.y ||
+						this.min.z < world.min.z || this.max.z > world.max.z) {
 						this.onCollision.dispatch(vgp.Boundary);
 						this.disable();
 					}
 					break;
 					
 				case vgp.Boundary.BOUNDARY_BOUNCE:
-					if (this.position.x - this.radius + this.offsetX < world.min.x) {
-						this.position.x = world.min.x - this.offsetX + this.radius;
-						this.velocity.x = -this.velocity.x * this.restitution;
-						this.onCollision.dispatch(vgp.Boundary);
-						
-					} else if (this.position.x + this.radius + this.offsetX > world.max.x) {
-						this.position.x = world.max.x - this.radius - this.offsetX;
+					if (this.min.x < world.min.x) {
+						this.position.x = world.min.x + this.radius;
 						this.velocity.x = -this.velocity.x * this.restitution;
 						this.onCollision.dispatch(vgp.Boundary);
 					}
-					
-					if (this.position.y - this.radius + this.offsetY < world.min.y) {
-						this.position.y = world.min.y - this.offsetY + this.radius;
-						this.velocity.y = -this.velocity.y * this.restitution;
+					else if (this.max.x > world.max.x) {
+						this.position.x = world.max.x - this.radius;
+						this.velocity.x = -this.velocity.x * this.restitution;
 						this.onCollision.dispatch(vgp.Boundary);
-						
-					} else if (this.position.y + this.radius + this.offsetY > world.max.y) {
-						this.position.y = world.max.y - this.radius - this.offsetY;
+					}
+					if (this.min.y < world.min.y) {
+						this.position.y = world.min.y + this.radius;
 						this.velocity.y = -this.velocity.y * this.restitution;
 						this.onCollision.dispatch(vgp.Boundary);
 					}
-					
-					if (this.position.z - this.radius + this.offsetZ < world.min.z) {
-						this.position.z = world.min.z - this.offsetZ + this.radius;
+					else if (this.max.y > world.max.y) {
+						this.position.y = world.max.y - this.radius;
+						this.velocity.y = -this.velocity.y * this.restitution;
+						this.onCollision.dispatch(vgp.Boundary);
+					}
+					if (this.min.z < world.min.z) {
+						this.position.z = world.min.z + this.radius;
 						this.velocity.z = -this.velocity.z * this.restitution;
-						this.onCollision.dispatch(vgp.Boundarz);
-						
-					} else if (this.position.z + this.radius + this.offsetZ > world.max.z) {
-						this.position.z = world.max.z - this.radius - this.offsetZ;
+						this.onCollision.dispatch(vgp.Boundary);
+					}
+					else if (this.max.z > world.max.z) {
+						this.position.z = world.max.z - this.radius;
 						this.velocity.z = -this.velocity.z * this.restitution;
-						this.onCollision.dispatch(vgp.Boundarz);
+						this.onCollision.dispatch(vgp.Boundary);
 					}
 					break;
 					
 				case vgp.Boundary.BOUNDARY_WRAP:
-					if (this.position.x - this.radius + this.offsetX < world.min.x) {
-						this.position.x += world.max.x - this.offsetX + this.radius;
-						
-					} else if (this.position.x + this.radius + this.offsetX > world.max.x) {
-						this.position.x -= world.max.x - this.radius - this.offsetX;
+					if (this.min.x < world.min.x) {
+						this.position.x += world.max.x + this.radius;
 					}
-					
-					if (this.position.y - this.radius + this.offsetY < world.min.y) {
-						this.position.y += world.max.y - this.offsetY + this.radius;
-						
-					} else if (this.position.y + this.radius + this.offsetY > world.max.y) {
-						this.position.y -= world.max.y - this.radius - this.offsetY;
+					else if (this.max.x > world.max.x) {
+						this.position.x -= world.max.x - this.radius;
+					}
+					if (this.min.y < world.min.y) {
+						this.position.y += world.max.y + this.radius;
+					}
+					else if (this.max.y > world.max.y) {
+						this.position.y -= world.max.y - this.radius;
+					}
+					if (this.min.z < world.min.z) {
+						this.position.z += world.max.z + this.radius;
+					}
+					else if (this.max.z > world.max.z) {
+						this.position.z -= world.max.z - this.radius;
 					}
 					break;
 			}
 		}
 		else {
 			// extend the grid to accommodate this
-			if (this.position.x + this.offsetX < world.min.x) {
-				world.min.x = this.position.x + this.offsetX;
-			}
-			else if (this.position.x + this.radius + this.offsetX > world.max.x) {
-				world.max.x = this.position.x + this.radius + this.offsetX;
-			}
-			if (this.position.y + this.offsetY < world.min.y) {
-				world.min.y = this.position.y + this.offsetY;
-			}
-			else if (this.position.y + this.radius + this.offsetY > world.max.y) {
-				world.max.y = this.position.y + this.radius + this.offsetY;
-			}
+			this.min.max(world.min);
+			this.max.min(world.max);
 		}
-		
-		this.min.x = this.position.x - this.radius + this.offsetX;
-		this.min.y = this.position.y - this.radius + this.offsetY;
-		this.min.z = this.position.z - this.radius + this.offsetZ;
-		this.max.x = this.position.x + this.radius + this.offsetX;
-		this.max.y = this.position.y + this.radius + this.offsetY;
-		this.max.z = this.position.z + this.radius + this.offsetZ;
 	},
 	
 	dispose: function() {

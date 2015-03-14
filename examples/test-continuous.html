@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv='X-UA-Compatible' content='IE=edge' />
+	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0' />
+	<meta name="author" content="Corey Birnbaum" />
+	<title>von-physics</title>
+	
+	<link href="normalize.css" rel="stylesheet" type="text/css"/>
+	<link href="style.css" rel="stylesheet" type="text/css"/>
+	
+	<style type="text/css">
+	body {
+		margin: 50px;
+	}
+	</style>
+</head>
+<Body>
+	
+	<canvas id="view"></canvas>
+
+<script type="text/javascript" src="../src/vgp.js"></script>
+<script type="text/javascript" src="../src/utils.js"></script>
+<script type="text/javascript" src="draw.js"></script>
+<script type="text/javascript" src="three.min.js"></script>
+
+<script type="text/javascript">
+window.addEventListener('load', function(evt) {
+	var c = document.getElementById('view');
+	c.width = window.innerWidth;
+	c.height = window.innerHeight;
+	var ctx = c.getContext('2d');
+	
+	var Vec = THREE.Vector3;
+	
+	var a = {radius: 15, pos: new Vec(60, 50, 0), vel: new Vec(140, 0, 0)};
+	var b = {radius: 10, pos: new Vec(160, 20, 0), vel: new Vec(-80, 60, 0)};
+	
+	/*
+		source: http://studiofreya.com/3d-math-and-physics/little-more-advanced-collision-detection-spheres/
+		this only works if they move past each other within a single frame, so for a complete implementation, see my physics library source which first tests if they're already overlapping, but if not, then sweep test.
+		it won't work if they're already overlapping, and also if they're on the path for a collision, but too far away.
+	*/
+	var s = new Vec();
+	s.copy(a.pos).sub(b.pos);
+	
+	var v = new Vec();
+	v.copy(a.vel).sub(b.vel);
+	
+	var r = a.radius + b.radius;
+	
+	var c = s.dot(s) - (r * r);
+	if (c < 0) {
+		console.log('negative, no overlap');
+		return;
+	}
+	
+	var vd = v.dot(v);
+	
+	var vs = v.dot(s);
+	if (vs >= 0) {
+		console.log('not moving towards each other');
+		return;
+	}
+	
+	var d = (vs * vs) - (vd * c);
+	if (d < 0) {
+		console.log('no roots...');
+		return;
+	}
+	
+	var t = (-vs - Math.sqrt(d)) / vd;
+	
+	console.log('COLLISION at '+t);
+	
+	// VISUALIZATION
+	// where they would have been
+	var afp = a.pos.clone().add(a.vel);
+	var bfp = b.pos.clone().add(b.vel);
+	vgp.draw.circle(ctx, afp, a.radius, 'rgba(0, 0, 0, 0.3)');
+	vgp.draw.circle(ctx, bfp, b.radius, 'rgba(0, 0, 0, 0.3)');
+	// where they were
+	vgp.draw.circle(ctx, a.pos, a.radius, 'rgb(200, 20, 20)');
+	vgp.draw.circle(ctx, b.pos, b.radius, 'rgb(20, 20, 200)');
+	// where they collided
+	// and this is how you find the point of intersection: multiply t to velocity, add position
+	vgp.draw.circle(ctx, a.vel.multiplyScalar(t).add(a.pos), a.radius, 'rgba(200, 20, 20, 0.5)');
+	vgp.draw.circle(ctx, b.vel.multiplyScalar(t).add(b.pos), b.radius, 'rgba(20, 20, 200, 0.5)');
+	// vis connection
+	vgp.draw.line(ctx, a.pos, a.vel, 'rgba(200, 20, 20, 0.5)');
+	vgp.draw.line(ctx, b.pos, b.vel, 'rgba(20, 20, 200, 0.5)');
+	// vis center of each where they collided
+	vgp.draw.circle(ctx, a.vel, 3, 'rgb(255, 255, 255)');
+	vgp.draw.circle(ctx, b.vel, 3, 'rgb(255, 255, 255)');
+	
+	
+}, false);
+</script>
+</Body>
+</html>

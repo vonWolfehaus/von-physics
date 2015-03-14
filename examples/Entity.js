@@ -24,7 +24,7 @@ var Entity = function(settings) {
 		depth: this.size,
 		radius: this.size / 2, // well, one of them will catch
 		restitution: 0.6,
-		maxSpeed: 15
+		maxSpeed: 10
 	});
 	this.view = new settings.ViewComponent(this, settings);
 	this.behavior = settings.BehaviorComponent ? new settings.BehaviorComponent(this) : null;

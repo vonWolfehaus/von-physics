@@ -51,8 +51,6 @@ var game = {
 
 window.addEventListener('load', function(evt) {
 	
-	vgp.Vec = THREE.Vector3;
-	
 	var scene = new Scene({
 		element: document.getElementById('view'),
 		light: new THREE.DirectionalLight(0x999999),
@@ -61,9 +59,9 @@ window.addEventListener('load', function(evt) {
 	
 	// init
 	var w = new vgp.World();
-	w.setBounds(400, 300, 400); // optional if you don't use boundary behaviors
-	// w.gravity = -20;
-	w.friction = 0.9;
+	w.setBounds(300, 200, 300); // optional if you don't use boundary behaviors
+	w.gravity.set(0, -9.8, 0);
+	w.friction = 0.98;
 	
 	// refocus the camera and light on the center of the World
 	var f = w.max.clone().divideScalar(2);
@@ -72,7 +70,7 @@ window.addEventListener('load', function(evt) {
 	scene.enableShadows();
 	var ground = scene.createGround(w.max.x, w.max.z);
 	ground.position.set(w.max.x / 2, 0, w.max.z / 2);
-	scene.light.position.set(500, 1000, 500);
+	scene.light.position.set(600, 800, 500);
 	
 	// setup
 	game.world = w;
@@ -91,14 +89,14 @@ window.addEventListener('load', function(evt) {
 		geo = new THREE.BoxGeometry(size, size, size);
 	}
 	else {
-		geo = new THREE.SphereGeometry(size / 2);
+		geo = new THREE.SphereGeometry(size / 2, 10, 8);
 	}
 	
 	var entitySettings = {
 		size: size,
 		PhysicsComponent: Body,
 		ViewComponent: View3,
-		BehaviorComponent: Wander3,
+		// BehaviorComponent: Wander3,
 		material: mat,
 		geometry: geo
 	};
@@ -110,14 +108,23 @@ window.addEventListener('load', function(evt) {
 		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y), vgp.utils.randomInt(0, w.max.z));
 		entities.push(o);
 	}
+	/*o = new Entity(entitySettings);
+	o.activate(100, 100, 100);
+	o.body.velocity.set();
+	entities.push(o);
+	o = new Entity(entitySettings);
+	o.activate(100, 100, 100);
+	o.body.velocity.set();
+	entities.push(o);*/
 	
 	// all you need to do is update entities, then update the world they're in
 	function update() {
-		for (i = 0; e = entities[i]; i++) {
-			if (e.active) e.update();
+		if (w.active) {
+			for (i = 0; e = entities[i]; i++) {
+				if (e.active) e.update();
+			}
+			w.update();
 		}
-		
-		if (w.active) w.update();
 		scene.render();
 		
 		window.requestAnimationFrame(update);

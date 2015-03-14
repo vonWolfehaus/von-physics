@@ -11,8 +11,8 @@ vgp.World = function() {
 	 */
 	this.bounded = false;
 	// universal properties all entities abide by (applied in physics component)
-	this.friction = 0.8;
-	this.gravity = 0;
+	this.friction = 0.9;
+	this.gravity = new vgp.Vec();
 	// elapsed will probably sit elsewhere in your game, just find-replace with your own
 	this.elapsed = 0.0166;
 	
@@ -86,7 +86,7 @@ vgp.World.prototype = {
 				otherObj = other.obj;
 				other = other.next;
 				
-				if (!obj.solid || otherObj.collisionID === obj.collisionID) {
+				if (!otherObj.solid || !otherObj.active || otherObj.collisionID === obj.collisionID) {
 					continue;
 				}
 				
