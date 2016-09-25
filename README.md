@@ -42,6 +42,7 @@ These are engines that have fancy things like rotational torque, joints, and so 
 * [balls vs quadratic curve](http://lonely-pixel.com/lab/ballcurves/)
 * [Mozilla](https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection)
 * [flocking done well](http://bluethen.com/wordpress/index.php/processing-app/flock-ai/)
+* [AABB vs Circle](http://stackoverflow.com/questions/9425739/box-to-circle-collision-as3)
 
 ## Other tricks
 
