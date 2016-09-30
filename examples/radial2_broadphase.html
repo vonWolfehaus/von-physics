@@ -6,15 +6,15 @@
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0' />
 	<meta name="author" content="Corey Birnbaum" />
 	<title>von-physics</title>
-	
+
 	<link href="css/normalize.css" rel="stylesheet" type="text/css"/>
 	<link href="css/style.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-	
+
 	<canvas id="view"></canvas>
-	
-<!-- framework setup -->
+
+<!-- framework -->
 <script type="text/javascript" src="../von-physics2.min.js"></script>
 
 <!-- demo objects -->
@@ -34,49 +34,51 @@ window.addEventListener('load', function(evt) {
 	c.width = window.innerWidth;
 	c.height = window.innerHeight;
 	var ctx = c.getContext('2d');
-	
+
 	// init
-	var w = new vgp.World();
+	var w = new vgp.World(60);
 	w.context = ctx; // optional (for debug drawing)
-	w.setBounds(600, 600); // optional if you don't use boundary behaviors
-	w.friction = 0.9;
-	
+	w.setBounds(800, 800); // optional if you don't use boundary behaviors
+	// w.gravity.set(0, 9.8);
+	w.friction = 0.98;
+
 	// setup
 	game.world = w;
-	
+
 	var entitySettings = {
 		size: 25,
-		PhysicsComponent: vgp.AABB2, // or vgp.Radial2
+		maxSpeed: 10,
+		PhysicsComponent: vgp.Radial2, // vgp.Radial2 or vgp.AABB2
 		ViewComponent: View2,
 		BehaviorComponent: Wander2
 	};
 	var entities = [];
-	var i, o, e, l;
-	for (i = 0; i < 75; i++) {
+	var i, o, e;
+	for (i = 0; i < 150; i++) {
 		o = new Entity(entitySettings);
 		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y));
 		entities.push(o);
 	}
-	
+
 	// all you need to do is update entities, then update the world they're in
 	function update() {
 		window.requestAnimationFrame(update);
 		if (!w.active) {
 			return;
 		}
-		
+
 		ctx.clearRect(0, 0, c.width, c.height);
-		
+
 		for (i = 0; e = entities[i]; i++) {
 			if (e.active) e.update();
 		}
-		
+
 		w.update();
 	}
-	
+
 	// startup
 	update();
-	
+
 	document.addEventListener('keydown', function(evt) {
 		if (evt.which == 32) { // space
 			w.active = !w.active;

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv='X-UA-Compatible' content='IE=edge' />
+	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0' />
+	<meta name="author" content="Corey Birnbaum" />
+	<title>Grid</title>
+
+	<link href="css/normalize.css" rel="stylesheet" type="text/css"/>
+	<link href="css/style.css" rel="stylesheet" type="text/css"/>
+</head>
+<Body>
+
+	<div id="view"></div>
+	<span id="status">Loading</span>
+
+<script type="text/javascript" src="js/three.min.js"></script>
+<script type="text/javascript" src="js/OrbitControls.js"></script>
+<script type="text/javascript" src="js/Scene.js"></script>
+
+<!-- framework -->
+<script type="text/javascript" src="../von-physics3.min.js"></script>
+
+<!-- demo objects -->
+<script type="text/javascript" src="js/draw.js"></script>
+<script type="text/javascript" src="js/View3.js"></script>
+<script type="text/javascript" src="js/Wander3.js"></script>
+<script type="text/javascript" src="js/Entity.js"></script>
+
+<script type="text/javascript">
+// replace this with your own global static object and don't forget to do a find-replace too
+var game = {
+	world: null,
+	scene: null
+};
+
+window.addEventListener('load', function(evt) {
+
+	var scene = new Scene({
+		element: document.getElementById('view'),
+		light: new THREE.DirectionalLight(0x999999),
+		cameraPosition: {x:300, y:0, z:300}
+	}, true);
+
+	// init
+	var w = new vgp.World();
+	w.setBounds(300, 200, 300); // optional if you don't use boundary behaviors
+	w.gravity.set(0, -9.8, 0);
+	w.friction = 0.98;
+
+	// refocus the camera and light on the center of the World
+	var f = w.max.clone().divideScalar(2);
+	scene.controls.target = f;
+	scene.camera.position.copy(w.max).multiplyScalar(1.5);
+	scene.enableShadows();
+	var ground = scene.createGround(w.max.x, w.max.z);
+	ground.position.set(w.max.x / 2, 0, w.max.z / 2);
+	scene.light.position.set(600, 800, 500);
+
+	// setup
+	game.world = w;
+	game.scene = scene;
+
+	var size = 35;
+
+	var color = 'rgb(48, 184, 75)';
+	var mat = new THREE.MeshPhongMaterial({
+		color: color,
+		ambient: color
+	});
+
+	var sphereGeo = new THREE.SphereGeometry(size / 2, 10, 8);
+	var boxGeo = new THREE.BoxGeometry(size, size, size);
+
+	var sphereSettings = {
+		size: size,
+		PhysicsComponent: vgp.Radial3,
+		ViewComponent: View3,
+		// BehaviorComponent: Wander3,
+		material: mat,
+		geometry: sphereGeo
+	};
+
+	var boxSettings = {
+		size: size,
+		PhysicsComponent: vgp.AABB3,
+		ViewComponent: View3,
+		// BehaviorComponent: Wander3,
+		material: mat,
+		geometry: boxGeo
+	};
+
+	var entities = [];
+	var i, o, e, l;
+	for (i = 0; i < 10; i++) {
+		o = new Entity(sphereSettings);
+		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y), vgp.utils.randomInt(0, w.max.z));
+		entities.push(o);
+	}
+
+	for (i = 0; i < 10; i++) {
+		o = new Entity(boxSettings);
+		o.activate(vgp.utils.randomInt(0, w.max.x), vgp.utils.randomInt(0, w.max.y), vgp.utils.randomInt(0, w.max.z));
+		entities.push(o);
+	}
+
+	// all you need to do is update entities, then update the world they're in
+	function update() {
+		if (w.active) {
+			for (i = 0; e = entities[i]; i++) {
+				if (e.active) e.update();
+			}
+			w.update();
+		}
+		scene.render();
+
+		window.requestAnimationFrame(update);
+	}
+
+	// startup
+	update();
+
+	document.getElementById('status').style.display = 'none';
+
+	document.addEventListener('keydown', function(evt) {
+		if (evt.which == 32) { // space
+			w.active = !w.active;
+		}
+	}, false);
+}, false);
+</script>
+</Body>
+</html>
