@@ -9,13 +9,67 @@
 
 	<link href="examples/css/normalize.css" rel="stylesheet" type="text/css"/>
 	<link href="examples/css/style.css" rel="stylesheet" type="text/css"/>
+	<style type="text/css">
+		a {
+			color: #4597ff;
+			text-decoration: none;
+		}
+		a:hover {
+			text-decoration: underline;
+		}
+		p {
+			margin: 15px 0;
+			text-align: left;
+		}
+		ul {
+			margin-left: 50px;
+			text-align: left;
+		}
+		hr {
+			border: 0;
+			background-color: #555;
+			height: 1px;
+			margin-bottom: 10px;
+		}
+		img {
+			float: right;
+		}
+		.column {
+			max-width: 800px;
+			margin: 0 auto;
+		}
+	</style>
 </head>
 <body>
+<div class="column">
+	<h1>von-physics</h1>
+	<h5>brought to you by <a href="http://coreybirnbaum.com">Corey Birnbaum</a></h5>
+	<img src="von-physics.jpg">
+	<p>After implementing far too many collision detection algorithms in my various experiments and games since 2009, I've decided enough is enough and compiled this tiny library of just the raw math behind collision detection and physical response.</p>
 
-	<h1>Examples</h1>
+	<p>It is meant to provide the minimal (and in most cases sufficient) system necessary for creating high performance real-time applications with dynamic objects interacting with each other.</p>
+
+	<p>Features:
+	<ul>
+	<li>Most efficient techniques for performant detection and response for axis-aligned 2D and 3D boxes and radial colliders</li>
+	<li>Mass and restitution only (sometimes less is more)</li>
+	<li>Continuous collision detection for 2D and 3D radial colliders</li>
+	<li>Signal dispatch on collision that provides collided entity and manifold describing the collision</li>
+	<li>"World" class with friction, gravity, and boundaries (infinity works too)</li>
+	<li>Memory-efficient broadphase (2D static grid)</li>
+	<li>Bonus 2D and 3D wandering behavior in the examples.</li>
+	</ul></p>
+
+	<p><em><strong>Note:</strong> If you use continuous detection and the broadphase grid, it can still miss some collisions because it doesn't check cells that the collider will be in after velocity is applied (it only uses position).</em></p>
+
+	<div class="card">
+	<h2>Examples</h2>
+	<hr>
 	<a href="examples/radial2_broadphase.html">Radial 2D (with broadphase)</a><br/>
 	<a href="examples/radial3.html">Radial 3D</a><br/>
 	<a href="examples/aabb2.html">AABB 2D</a><br/>
 	<a href="examples/aabb3.html">AABB 3D</a><br/>
+	</div>
+	</div>
 </body>
 </html>
