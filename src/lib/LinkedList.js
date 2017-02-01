@@ -8,9 +8,9 @@ vgp.LinkedListNode = function() {
 	A high-speed doubly-linked list of objects. Note that for speed reasons (using a dictionary lookup of
 	cached nodes) there can only be a single instance of an object in the list at the same time. Adding the same
 	object a second time will result in a silent return from the add method.
-	
+
 	In order to keep a track of node links, an object must be able to identify itself with a uniqueID function.
-	
+
 	To add an item use:
 	<pre><code>
 	  list.add(newItem);
@@ -25,30 +25,33 @@ vgp.LinkedListNode = function() {
 	      node = node.next();
 	  }
 	</code></pre>
- */
+*/
 vgp.LinkedList = function() {
 	this.first = null;
 	this.last = null;
 	this.length = 0;
 	this.objToNodeMap = {}; // a quick lookup list to map linked list nodes to objects
 	this.uniqueID = Date.now() + '' + Math.floor(Math.random()*1000);
-	
 	this.sortArray = [];
-	
+};
+
+vgp.LinkedList.prototype = {
+	constructor: vgp.LinkedList,
+
 	/*
 		Get the LinkedListNode for this object.
 		@param obj The object to get the node for
 	 */
-	this.getNode = function (obj) {
+	getNode: function (obj) {
 		// objects added to a list must implement a uniqueID which returns a unique object identifier string
 		return this.objToNodeMap[obj.uniqueID];
-	};
+	},
 
 	/*
 		Adds a new node to the list -- typically only used internally unless you're doing something funky
 		Use add() to add an object to the list, not this.
 	 */
-	this.addNode = function (obj) {
+	addNode: function (obj) {
 		var node = new vgp.LinkedListNode();
 		if (!obj.uniqueID) {
 			try {
@@ -60,31 +63,31 @@ vgp.LinkedList = function() {
 				return null;
 			}
 		}
-		
+
 		node.obj = obj;
 		node.free = false;
 		this.objToNodeMap[obj.uniqueID] = node;
 		return node;
-	};
-	
-	this.swapObjects = function(node, newObj) {
+	},
+
+	swapObjects: function(node, newObj) {
 		this.objToNodeMap[node.obj.uniqueID] = null;
 		this.objToNodeMap[newObj.uniqueID] = node;
 		node.obj = newObj;
-	};
+	},
 
 	/*
 		Add an item to the list
 		@param obj The object to add
 	 */
-	this.add = function (obj) {
+	add: function (obj) {
 		var node = this.objToNodeMap[obj.uniqueID];
-		
+
 		if (!node) {
 			node = this.addNode(obj);
 		} else {
 			if (node.free === false) return;
-			
+
 			// reusing a node, so we clean it up
 			// this caching of node/object pairs is the reason an object can only exist
 			// once in a list -- which also makes things faster (not always creating new node
@@ -115,17 +118,17 @@ vgp.LinkedList = function() {
 		this.length++;
 
 		if (this.showDebug) this.dump('after add');
-	};
+	},
 
-	this.has = function (obj) {
+	has: function (obj) {
 		return !!this.objToNodeMap[obj.uniqueID];
-	};
+	},
 
 	/*
 		Moves this item upwards in the list
 		@param obj
 	 */
-	this.moveUp = function (obj) {
+	moveUp: function (obj) {
 		this.dump('before move up');
 		var c = this.getNode(obj);
 		if (!c) throw "Oops, trying to move an object that isn't in the list";
@@ -152,13 +155,13 @@ vgp.LinkedList = function() {
 
 		// check to see if we are now first
 		if (this.first == b) this.first = c;
-	};
+	},
 
 	/*
 		Moves this item downwards in the list
 		@param obj
 	 */
-	this.moveDown = function (obj) {
+	moveDown: function (obj) {
 		var b = this.getNode(obj);
 		if (!b) throw "Oops, trying to move an object that isn't in the list";
 		if (!b.next) return; // already last, ignore
@@ -172,37 +175,37 @@ vgp.LinkedList = function() {
 
 		// check to see if we are now last
 		if (this.last == c) this.last = b;
-	};
-	
+	},
+
 	/*
 		Take everything off the list and put it in an array, sort it, then put it back.
 	 */
-	this.sort = function (compare) {
+	sort: function (compare) {
 		var sortArray = this.sortArray;
 		var i, l, node = this.first;
 		sortArray.length = 0;
-		
+
 		while (node) {
 			sortArray.push(node.obj);
 			node = node.next;
 		}
-		
+
 		this.clear();
-		
+
 		sortArray.sort(compare);
 		// console.log(sortArray);
 		l = sortArray.length;
 		for (i = 0; i < l; i++) {
 			this.add(sortArray[i]);
 		}
-	};
+	},
 
 	/*
 		Removes an item from the list
 		@param obj The object to remove
 		@returns boolean true if the item was removed, false if the item was not on the list
 	 */
-	this.remove = function (obj) {
+	remove: function (obj) {
 		var node = this.getNode(obj);
 		if (!node || node.free){
 			return false; // ignore this error (trying to remove something not there)
@@ -223,12 +226,12 @@ vgp.LinkedList = function() {
 		node.next = null;
 
 		this.length--;
-		
+
 		return true;
-	};
-	
+	},
+
 	// remove the head and return it's object
-	this.shift = function() {
+	shift: function() {
 		var node = this.first;
 		if (this.length === 0) return null;
 		// if (node == null || node.free == true) return null;
@@ -240,21 +243,21 @@ vgp.LinkedList = function() {
 		if (node.next) {
 			node.next.prev = node.prev;
 		}
-		
+
 		// make the next on the list first (can be null)
 		this.first = node.next;
 		if (!node.next) this.last = null; // make sure we clear this
-		
+
 		node.free = true;
 		node.prev = null;
 		node.next = null;
 
 		this.length--;
 		return node.obj;
-	};
-	
+	},
+
 	// remove the tail and return it's object
-	this.pop = function() {
+	pop: function() {
 		var node = this.last;
 		if (this.length === 0) return null;
 
@@ -265,61 +268,62 @@ vgp.LinkedList = function() {
 		if (node.next) {
 			node.next.prev = node.prev;
 		}
-		
+
 		// this node's previous becomes last
 		this.last = node.prev;
 		if (!node.prev) this.first = null; // make sure we clear this
-		
+
 		node.free = true;
 		node.prev = null;
 		node.next = null;
 
 		this.length--;
 		return node.obj;
-	};
-	
+	},
+
 	/**
 	 * Add the passed list to this list, leaving it untouched.
 	 */
-	this.concat = function(list) {
+	concat: function(list) {
 		var node = list.first;
 		while (node) {
 			this.add(node.obj);
 			node = node.next;
 		}
-	};
+	},
 
 	/**
 	 * Clears the list out
 	 */
-	this.clear = function() {
-		var next = this.first;
-		
-		while (next) {
-			next.free = true;
-			next = next.next;
+	clear: function() {
+		var node = this.first;
+
+		while (node) {
+			node.free = true;
+			node = node.next;
 		}
-		
+
 		this.first = null;
+		this.last = null;
 		this.length = 0;
-	};
-	
-	this.dispose = function() {
-		var next = this.first;
-		
-		while (next) {
-			next.obj = null;
-			next = next.next;
+	},
+
+	dispose: function() {
+		var node = this.first;
+
+		while (node) {
+			node.obj = null;
+			node = node.next;
 		}
 		this.first = null;
-		
+
 		this.objToNodeMap = null;
-	};
+	},
 
 	/*
 		Outputs the contents of the current list for debugging.
 	 */
-	this.dump = function(msg) {
+	dump: function(msg) {
 		console.log('====================' + msg + '=====================');
 		var a = this.first;
 		while (a) {
@@ -329,7 +333,7 @@ vgp.LinkedList = function() {
 		console.log("===================================");
 		console.log("Last: {" + (this.last ? this.last.obj : 'NULL') + "} " +
 			"First: {" + (this.first ? this.first.obj : 'NULL') + "}");
-	};
+	}
 };
 
 // static function for utility
